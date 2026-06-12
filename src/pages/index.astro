@@ -84,7 +84,7 @@ if (isConfigured && supabase) {
 }
 
 // ── Cache headers ─────────────────────────────────────────────────────────────
-Astro.response.headers.set("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
+Astro.response.headers.set("Cache-Control", "no-store");
 ---
 
 <Layout
