@@ -1,0 +1,35 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PortfolioManager from "../components/PortfolioManager";
+import { supabase, isConfigured } from "../lib/supabase";
+import type { AssetRow } from "../components/PortfolioManager";
+
+// ── SSR: Fetch live assets from Supabase ──────────────────────────────────────
+let assets: AssetRow[] = [];
+
+if (isConfigured && supabase) {
+  try {
+    const { data, error } = await supabase
+      .from("assets_portfolio")
+      .select("id, asset_name, asset_type, total_units, average_buy_price, current_value, updated_at")
+      .order("asset_type", { ascending: true })
+      .order("current_value", { ascending: false });
+
+    if (!error && data) {
+      assets = data as AssetRow[];
+    }
+  } catch (err) {
+    console.error("[portfolio.astro] Failed to fetch assets:", err);
+  }
+}
+
+// ── Cache: short TTL so prices feel fresh ─────────────────────────────────────
+Astro.response.headers.set("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
+---
+
+<Layout
+  title="FinGram — Asset Portfolio"
+  description="Pantau dan kelola seluruh portofolio aset investasi Anda: saham, kripto, emas, dan reksa dana."
+>
+  <PortfolioManager client:load initialAssets={assets} />
+</Layout>

@@ -1,0 +1,30 @@
+{
+  "name": "FinGram",
+  "short_name": "FinGram",
+  "description": "Zero-cost personal wealth management and financial tracking application.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1c1b",
+  "theme_color": "#2f7e79",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
