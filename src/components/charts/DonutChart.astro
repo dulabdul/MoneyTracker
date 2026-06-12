@@ -1,0 +1,182 @@
+---
+// DonutChart.astro — Dynamic segmented donut chart driven by real data
+import type { CategoryBreakdown } from "../../lib/supabase";
+
+interface Props {
+  title?: string;
+  centerLabel?: string;
+  centerValue?: string;
+  segments?: CategoryBreakdown[];
+}
+
+const {
+  title = "Income Distribution",
+  centerLabel = "Total",
+  centerValue = "Rp 0",
+  segments = [] as CategoryBreakdown[],
+} = Astro.props;
+
+// SVG donut math — circumference = 2π × r
+const R = 75;
+const CIRC = 2 * Math.PI * R; // 471.24
+
+// Build path offsets from the percentage array
+// Start from top (-rotate-90 handles this in CSS)
+const TOTAL_PCT = segments.reduce((s, seg) => s + seg.percentage, 0) || 100;
+let currentOffset = 0;
+const segmentData = segments.map((seg) => {
+  const pct = seg.percentage / TOTAL_PCT;
+  const dashLen = pct * CIRC;
+  // gap = remaining circumference
+  const dashGap = CIRC - dashLen + 2; // +2 for visual gap between segments
+  const offset = CIRC - currentOffset;
+  currentOffset += dashLen;
+  return { ...seg, dashLen, dashGap, offset };
+});
+
+function formatIDR(n: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+  }).format(n);
+}
+
+const chartId = `donut-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div class="donut-chart-card flex flex-col p-5 bg-card border border-border/80 rounded-3xl h-full shadow-sm hover:shadow-md transition-all select-none" data-chart-id={chartId}>
+  <div class="flex items-center justify-between mb-3">
+    <h4 class="text-xs font-bold text-[#1B5C58] dark:text-teal-400 uppercase tracking-wider">{title}</h4>
+  </div>
+
+  <!-- Donut + Center -->
+  <div class="flex-1 flex flex-col items-center justify-center min-h-[160px]">
+    {segments.length === 0 ? (
+      <div class="text-center py-8 text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+        <svg class="h-8 w-8 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+        </svg>
+        <span>Belum ada data distribusi</span>
+      </div>
+    ) : (
+      <div class="relative w-full max-w-[180px] aspect-square flex items-center justify-center">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+          <!-- Track ring -->
+          <circle cx="100" cy="100" r={R} fill="none" stroke="var(--color-border)" stroke-width="14" stroke-opacity="0.4" />
+          {segmentData.map((seg) => (
+            <circle
+              cx="100"
+              cy="100"
+              r={R}
+              fill="none"
+              stroke={seg.color}
+              stroke-width="16"
+              stroke-dasharray={`${seg.dashLen - 3} ${seg.dashGap + 3}`}
+              stroke-dashoffset={seg.offset}
+              stroke-linecap="round"
+              data-category={seg.category}
+              data-value={formatIDR(seg.amount)}
+              data-percentage={`${seg.percentage}%`}
+              data-color={seg.color}
+              class="donut-segment transition-all duration-300 cursor-pointer outline-none"
+            />
+          ))}
+        </svg>
+
+        <!-- Center Labels -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+          <span class="donut-center-label text-[9px] font-extrabold uppercase tracking-widest text-[#1B5C58]/80 dark:text-teal-400 transition-all duration-200">{centerLabel}</span>
+          <span class="donut-center-value text-sm font-black tracking-tight text-foreground mt-0.5 transition-all duration-200">{centerValue}</span>
+          <span class="donut-center-sub text-[9px] font-bold text-teal-600 dark:text-teal-400 opacity-0 transition-all duration-200 mt-0.5"></span>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <!-- Legend -->
+  {segments.length > 0 && (
+    <div class="w-full mt-4 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-border/40 pt-3">
+      {segments.map((seg) => (
+        <div
+          class="flex items-center gap-1.5 text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity"
+          data-legend-cat={seg.category}
+        >
+          <span
+            class="h-2.5 w-2.5 rounded-full shrink-0"
+            style={`background-color: ${seg.color};`}
+          />
+          <div class="flex-1 min-w-0">
+            <p class="truncate text-foreground leading-none text-[11px]">{seg.category}</p>
+            <p class="text-[9px] text-muted-foreground font-medium mt-0.5">{seg.percentage}%</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+<script>
+  function initDonutCharts() {
+    document.querySelectorAll('.donut-chart-card').forEach((card) => {
+      const segments = card.querySelectorAll('.donut-segment');
+      const labelEl  = card.querySelector('.donut-center-label');
+      const valueEl  = card.querySelector('.donut-center-value');
+      const subEl    = card.querySelector('.donut-center-sub');
+      const legends  = card.querySelectorAll('[data-legend-cat]');
+
+      if (!labelEl || !valueEl || !subEl) return;
+
+      const defaultLabel = labelEl.textContent || '';
+      const defaultValue = valueEl.textContent || '';
+
+      function resetCenter() {
+        labelEl!.textContent = defaultLabel;
+        valueEl!.textContent = defaultValue;
+        subEl!.textContent = '';
+        (subEl as HTMLElement).classList.add('opacity-0');
+        segments.forEach(seg => {
+          seg.setAttribute('stroke-width', '16');
+          (seg as HTMLElement).style.opacity = '1';
+        });
+        legends.forEach(leg => { (leg as HTMLElement).style.opacity = '1'; });
+      }
+
+      segments.forEach((segment) => {
+        function highlight() {
+          const cat = segment.getAttribute('data-category') || '';
+          const val = segment.getAttribute('data-value') || '';
+          const pct = segment.getAttribute('data-percentage') || '';
+          labelEl!.textContent = cat;
+          valueEl!.textContent = val;
+          subEl!.textContent = pct;
+          (subEl as HTMLElement).classList.remove('opacity-0');
+          segments.forEach(seg => {
+            const isActive = seg === segment;
+            seg.setAttribute('stroke-width', isActive ? '20' : '13');
+            (seg as HTMLElement).style.opacity = isActive ? '1' : '0.3';
+          });
+          legends.forEach(leg => {
+            (leg as HTMLElement).style.opacity = leg.getAttribute('data-legend-cat') === cat ? '1' : '0.35';
+          });
+        }
+        segment.addEventListener('mouseenter', highlight);
+        segment.addEventListener('mouseleave', resetCenter);
+        segment.addEventListener('click', (e) => { e.stopPropagation(); highlight(); });
+      });
+
+      legends.forEach(legend => {
+        const catName = legend.getAttribute('data-legend-cat');
+        const segment = card.querySelector(`[data-category="${catName}"]`);
+        if (!segment) return;
+        legend.addEventListener('mouseenter', () => segment.dispatchEvent(new Event('mouseenter')));
+        legend.addEventListener('mouseleave', () => segment.dispatchEvent(new Event('mouseleave')));
+        legend.addEventListener('click', (e) => { e.stopPropagation(); segment.dispatchEvent(new Event('click')); });
+      });
+
+      card.addEventListener('click', resetCenter);
+    });
+  }
+
+  initDonutCharts();
+  document.addEventListener('astro:page-load', initDonutCharts);
+</script>

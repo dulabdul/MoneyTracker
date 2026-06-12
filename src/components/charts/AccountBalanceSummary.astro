@@ -1,0 +1,72 @@
+---
+// AccountBalanceSummary.astro — Breakdown of active accounts and their balances
+import { getAccountLogo } from "../../lib/logoUtils";
+import type { Wallet } from "../../lib/supabase";
+
+interface Props {
+  accounts?: Wallet[];
+}
+
+const { accounts = [] } = Astro.props;
+
+function formatIDR(n: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+  }).format(n);
+}
+
+const totalSum = accounts.reduce((acc, curr) => acc + (curr.balance ?? 0), 0);
+---
+
+<div class="flex flex-col p-5 bg-card border border-border/80 rounded-3xl h-full justify-between shadow-sm hover:shadow-md transition-all">
+  <div>
+    <h4 class="text-xs font-bold text-[#1B5C58] dark:text-teal-400 uppercase tracking-wider">Account Balance Summary</h4>
+    <p class="text-[11px] text-muted-foreground mt-0.5">Daftar saldo dan aset yang tersedia di setiap akun keuangan Anda.</p>
+  </div>
+
+  <div class="mt-4 flex-1 flex flex-col justify-center gap-3">
+    {accounts.length === 0 ? (
+      <div class="text-center py-6 text-xs text-muted-foreground">Tidak ada akun ditemukan</div>
+    ) : (
+      accounts.map((acc) => {
+        const logo = getAccountLogo(acc.name);
+        return (
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/40 border border-border/60 hover:border-border transition-colors">
+            <div class="flex items-center gap-3 min-w-0">
+              {/* Brand Logo Wrapper */}
+              <div class="h-10 w-10 rounded-xl overflow-hidden shrink-0 flex items-center justify-center border border-border/80 bg-background/50">
+                {logo.type === "fallback" ? (
+                  <div class={`h-full w-full flex items-center justify-center text-white font-extrabold text-sm bg-gradient-to-tr ${logo.bgGradient}`}>
+                    {logo.value}
+                  </div>
+                ) : (
+                  <img
+                    src={logo.value}
+                    alt={acc.name}
+                    class="h-7 w-7 object-contain"
+                    loading="lazy"
+                    width="28"
+                    height="28"
+                  />
+                )}
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-foreground block truncate">{acc.name}</span>
+                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wider block">IDR Account</span>
+              </div>
+            </div>
+            <div class="text-right shrink-0 pl-2">
+              <span class="font-extrabold text-xs text-foreground block tabular-nums">{formatIDR(acc.balance)}</span>
+            </div>
+          </div>
+        );
+      })
+    )}
+  </div>
+
+  <!-- Footer total -->
+  <div class="mt-4 flex items-center justify-between p-3 rounded-2xl border bg-[#2F7E79]/5 dark:bg-teal-500/5 border-[#2F7E79]/10 text-xs">
+    <span class="font-bold text-muted-foreground">Total Aset Likuid</span>
+    <span class="font-extrabold text-[#2F7E79] dark:text-teal-400 tabular-nums">{formatIDR(totalSum)}</span>
+  </div>
+</div>

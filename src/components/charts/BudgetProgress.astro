@@ -1,0 +1,82 @@
+---
+// BudgetProgress.astro — YTD Budget summary driven by real data
+interface Props {
+  budgetLimit?: number;   // raw number in IDR
+  ytdSpent?: number;      // raw number in IDR
+  ytdIncome?: number;
+  percentage?: number;
+}
+
+const {
+  budgetLimit = 120_000_000,
+  ytdSpent    = 0,
+  ytdIncome   = 0,
+  percentage  = 0,
+} = Astro.props;
+
+function formatIDR(n: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+  }).format(n);
+}
+
+const remaining  = Math.max(0, budgetLimit - ytdSpent);
+const pct        = percentage || Math.min(100, Math.round((ytdSpent / budgetLimit) * 100));
+const isOverBudget = ytdSpent > budgetLimit;
+const savingsRate  = ytdIncome > 0 ? Math.round(((ytdIncome - ytdSpent) / ytdIncome) * 100) : 0;
+---
+
+<div class="flex flex-col p-5 bg-card border border-border/80 rounded-3xl h-full justify-between shadow-sm hover:shadow-md transition-all">
+  <div>
+    <h4 class="text-xs font-bold text-[#1B5C58] dark:text-teal-400 uppercase tracking-wider">YTD Budget Summary</h4>
+    <p class="text-[11px] text-muted-foreground mt-0.5">Budget allocations and spending for {new Date().getFullYear()}.</p>
+  </div>
+
+  <div class="mt-4 space-y-4 flex-1 flex flex-col justify-center">
+    <!-- Progress bar -->
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between text-xs font-bold text-foreground">
+        <span>Year to Date Usage</span>
+        <span class={isOverBudget ? "text-rose-500" : "text-[#2F7E79] dark:text-teal-400"}>{pct}%</span>
+      </div>
+      <div class="h-3 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden p-[2px] border border-zinc-200/50 dark:border-none shadow-inner">
+        <div
+          class={`h-full rounded-full transition-all duration-700 ${isOverBudget ? "bg-gradient-to-r from-rose-500 to-rose-400 shadow-[0_0_8px_rgba(239,68,68,0.3)]" : "bg-gradient-to-r from-teal-600 to-teal-500 shadow-[0_0_8px_rgba(47,126,121,0.3)]"}`}
+          style={`width: ${Math.min(pct, 100)}%`}
+        />
+      </div>
+    </div>
+
+    <!-- Stats grid -->
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div class="bg-zinc-50/50 dark:bg-zinc-900/40 p-3 rounded-2xl border border-border/60">
+        <span class="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">Total Budget</span>
+        <span class="font-extrabold text-foreground mt-1 block text-sm">{formatIDR(budgetLimit)}</span>
+      </div>
+      <div class="bg-zinc-50/50 dark:bg-zinc-900/40 p-3 rounded-2xl border border-border/60">
+        <span class="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">YTD Spent</span>
+        <span class={`font-extrabold mt-1 block text-sm ${isOverBudget ? "text-rose-500" : "text-foreground"}`}>{formatIDR(ytdSpent)}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer note -->
+  <div class={`mt-4 flex items-center gap-2.5 text-[11px] p-3 rounded-2xl border ${isOverBudget ? "bg-rose-500/5 border-rose-500/10 text-rose-600 dark:text-rose-400" : "bg-[#2F7E79]/5 dark:bg-teal-500/5 border-[#2F7E79]/10 text-muted-foreground"}`}>
+    <div class={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 ${isOverBudget ? "bg-rose-500/10 text-rose-500" : "bg-teal-500/10 text-[#2F7E79] dark:text-teal-400"}`}>
+      {isOverBudget ? (
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      ) : (
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      )}
+    </div>
+    {isOverBudget ? (
+      <span>Over budget by <span class="font-bold">{formatIDR(ytdSpent - budgetLimit)}</span>.</span>
+    ) : (
+      <span>Remaining: <span class="font-bold text-foreground">{formatIDR(remaining)}</span>{ytdIncome > 0 ? ` · Saving rate ${savingsRate}%` : ""}.</span>
+    )}
+  </div>
+</div>

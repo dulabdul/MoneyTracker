@@ -1,0 +1,84 @@
+---
+// BarChart.astro — Weekly expense bar chart driven by real data
+import type { WeeklyExpense } from "../../lib/supabase";
+
+interface Props {
+  title?: string;
+  weeklyData?: WeeklyExpense[];
+}
+
+const { title = "Weekly Expenses" } = Astro.props;
+let { weeklyData = [] } = Astro.props;
+
+if (!weeklyData || weeklyData.length === 0) {
+  weeklyData = [
+    { day: "Mon", amount: 0,       heightPct: 5  },
+    { day: "Tue", amount: 0,       heightPct: 5  },
+    { day: "Wed", amount: 0,       heightPct: 5  },
+    { day: "Thu", amount: 0,       heightPct: 5  },
+    { day: "Fri", amount: 0,       heightPct: 5  },
+    { day: "Sat", amount: 0,       heightPct: 5  },
+    { day: "Sun", amount: 0,       heightPct: 5  },
+  ];
+}
+
+function formatIDR(n: number) {
+  if (n === 0) return "Rp 0";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+  }).format(n);
+}
+
+const maxAmount = Math.max(...weeklyData.map((d) => d.amount), 1);
+
+// Y-axis labels based on max
+function yLabel(amount: number) {
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}jt`;
+  if (amount >= 1_000) return `${Math.round(amount / 1_000)}rb`;
+  return amount.toString();
+}
+---
+
+<div class="flex flex-col p-5 bg-card border border-border/80 rounded-3xl h-full shadow-sm hover:shadow-md transition-all">
+  <div class="flex items-center justify-between">
+    <h4 class="text-xs font-bold text-[#1B5C58] dark:text-teal-400 uppercase tracking-wider">{title}</h4>
+    <span class="text-[10px] font-semibold text-muted-foreground">This Week</span>
+  </div>
+
+  <div class="mt-5 flex flex-1 items-end gap-2 min-h-[180px] h-full pb-1">
+    <!-- Y-Axis -->
+    <div class="flex flex-col justify-between h-[160px] text-[9px] font-semibold text-muted-foreground select-none pr-1 text-right w-10 shrink-0">
+      <span>{yLabel(maxAmount)}</span>
+      <span>{yLabel(Math.round(maxAmount * 0.75))}</span>
+      <span>{yLabel(Math.round(maxAmount * 0.50))}</span>
+      <span>{yLabel(Math.round(maxAmount * 0.25))}</span>
+      <span>0</span>
+    </div>
+
+    <!-- Chart area -->
+    <div class="flex-1 flex items-end justify-between h-[160px] border-l border-b border-border/40 pl-2 relative">
+      <!-- Grid guides -->
+      <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
+        {[0,1,2,3].map(() => <div class="border-t border-muted-foreground w-full" />)}
+      </div>
+
+      {weeklyData.map((bar) => (
+        <div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative px-0.5">
+          <!-- Tooltip -->
+          <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1B5C58] dark:bg-teal-600 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap pointer-events-none -translate-x-1/2 left-1/2">
+            {formatIDR(bar.amount)}
+          </div>
+          <!-- Bar -->
+          <div
+            class={`w-full max-w-[12px] rounded-t-full transition-all duration-500 group-hover:brightness-110 ${bar.amount > 0 ? "bg-gradient-to-t from-primary to-primary/70" : "bg-muted/40"}`}
+            style={`height: ${bar.heightPct}%`}
+          />
+          <!-- X label -->
+          <span class="text-[9px] font-medium text-muted-foreground group-hover:text-foreground mt-2 select-none absolute -bottom-5 transition-colors">
+            {bar.day}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
