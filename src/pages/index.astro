@@ -276,11 +276,7 @@ Astro.response.headers.set("Cache-Control", "no-store");
             title="Expense Distribution"
             centerLabel="Expenses"
             centerValue={formatIDR(monthlyExpense)}
-            segments={expenseSegments.length > 0 ? expenseSegments : [
-              { category: "Makanan",     amount: 605000,  percentage: 35, color: "oklch(0.65 0.25 45)"   },
-              { category: "Tagihan",     amount: 875000,  percentage: 51, color: "oklch(0.55 0.22 20)"   },
-              { category: "Hiburan",     amount: 239900,  percentage: 14, color: "oklch(0.35 0.18 310)"  },
-            ]}
+            segments={expenseSegments.length > 0 ? expenseSegments : undefined}
           />
         )}
 
