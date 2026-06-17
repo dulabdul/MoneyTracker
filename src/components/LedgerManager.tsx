@@ -212,6 +212,7 @@ export function TxFormDialog({
   wallets,
   categories,
   initial,
+  onCategoryCreated,
 }: {
   open: boolean;
   onClose: () => void;
@@ -219,6 +220,7 @@ export function TxFormDialog({
   wallets: Wallet[];
   categories: Category[];
   initial?: Partial<TxFormData>;
+  onCategoryCreated?: (category: Category) => void;
 }) {
   const [form, setForm] = useState<Partial<TxFormData>>({
     description: "",
@@ -231,6 +233,17 @@ export function TxFormDialog({
   const [errors, setErrors] = useState<Partial<Record<keyof TxFormData, string>>>({});
   const [saving, setSaving] = useState(false);
 
+  // Local state for categories to allow inline additions
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [addingCategoryError, setAddingCategoryError] = useState<string | null>(null);
+  const [isAddingCategoryLoading, setIsAddingCategoryLoading] = useState(false);
+
+  useEffect(() => {
+    setLocalCategories(categories);
+  }, [categories]);
+
   // Reset on open
   useEffect(() => {
     if (open) {
@@ -242,12 +255,79 @@ export function TxFormDialog({
         category_id: initial?.category_id ?? "",
       });
       setErrors({});
+      setIsAddingCategory(false);
+      setNewCategoryName("");
+      setAddingCategoryError(null);
     }
-  }, [open]);
+  }, [open, initial]);
+
+  async function handleCreateCategoryInline() {
+    const name = newCategoryName.trim();
+    if (!name) {
+      setAddingCategoryError("Nama kategori tidak boleh kosong");
+      return;
+    }
+    setAddingCategoryError(null);
+    setIsAddingCategoryLoading(true);
+
+    try {
+      if (isConfigured && supabase) {
+        const { data, error } = await supabase
+          .from("categories")
+          .insert({
+            name: name,
+            type: form.type || "EXPENSE",
+          })
+          .select("id, name, type")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const newCat = data as Category;
+          setLocalCategories((prev) => [...prev, newCat]);
+          setForm((prev) => ({ ...prev, category_id: newCat.id }));
+          if (onCategoryCreated) {
+            onCategoryCreated(newCat);
+          }
+          window.dispatchEvent(
+            new CustomEvent("show-toast", {
+              detail: { message: `Kategori "${newCat.name}" berhasil dibuat`, type: "success" },
+            })
+          );
+          setIsAddingCategory(false);
+          setNewCategoryName("");
+        }
+      } else {
+        // Demo mode fallback
+        const mockId = "c_mock_" + Math.random().toString(36).substring(2, 9);
+        const mockCat: Category = {
+          id: mockId,
+          name: name,
+          type: form.type || "EXPENSE",
+        };
+        setLocalCategories((prev) => [...prev, mockCat]);
+        setForm((prev) => ({ ...prev, category_id: mockId }));
+        if (onCategoryCreated) {
+          onCategoryCreated(mockCat);
+        }
+        window.dispatchEvent(
+          new CustomEvent("show-toast", {
+            detail: { message: `[Demo] Kategori "${mockCat.name}" berhasil dibuat`, type: "success" },
+          })
+        );
+        setIsAddingCategory(false);
+        setNewCategoryName("");
+      }
+    } catch (err: any) {
+      setAddingCategoryError(err.message || "Gagal membuat kategori");
+    } finally {
+      setIsAddingCategoryLoading(false);
+    }
+  }
 
   const filteredCategories = useMemo(
-    () => categories.filter((c) => !form.type || c.type === form.type),
-    [categories, form.type]
+    () => localCategories.filter((c) => !form.type || c.type === form.type),
+    [localCategories, form.type]
   );
 
   async function handleSubmit(e: React.FormEvent) {
@@ -331,18 +411,75 @@ export function TxFormDialog({
               />
             </FormField>
 
-            <FormField label="Kategori" error={errors.category_id}>
-              <Select value={form.category_id ?? ""} onValueChange={(v) => setForm((p) => ({ ...p, category_id: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Kategori</label>
+                {!isAddingCategory && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCategory(true)}
+                    className="text-[10px] text-[#2F7E79] dark:text-teal-400 font-bold hover:underline cursor-pointer"
+                  >
+                    + Kategori Baru
+                  </button>
+                )}
+              </div>
+              {isAddingCategory ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Nama kategori..."
+                      className="rounded-xl border-border/80 bg-background h-10 text-sm pr-8"
+                      disabled={isAddingCategoryLoading}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleCreateCategoryInline();
+                        }
+                      }}
+                    />
+                    {isAddingCategoryLoading && (
+                      <span className="absolute right-2.5 top-3.5 h-3.5 w-3.5 rounded-full border-2 border-teal-500/20 border-t-teal-500 animate-spin" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCreateCategoryInline}
+                    disabled={isAddingCategoryLoading}
+                    className="h-10 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Simpan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingCategory(false);
+                      setNewCategoryName("");
+                      setAddingCategoryError(null);
+                    }}
+                    disabled={isAddingCategoryLoading}
+                    className="h-10 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-foreground border border-border/80 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-xs flex items-center justify-center transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                </div>
+              ) : (
+                <Select value={form.category_id ?? ""} onValueChange={(v) => setForm((p) => ({ ...p, category_id: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border/80 rounded-xl">
+                    {filteredCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="text-sm rounded-lg">{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {addingCategoryError && <p className="text-xs text-rose-500 font-medium mt-1">{addingCategoryError}</p>}
+              {errors.category_id && !isAddingCategory && <p className="text-xs text-rose-500 font-medium mt-1">{errors.category_id}</p>}
+            </div>
           </div>
 
           <DialogFooter className="gap-2 pt-3 border-t border-border/40 mt-6">
@@ -1064,6 +1201,7 @@ export default function LedgerManager({
         onSave={handleAdd}
         wallets={wallets}
         categories={categories}
+        onCategoryCreated={(newCat) => setCategories((prev) => [...prev, newCat])}
       />
 
       <AddAccountDialog
@@ -1084,6 +1222,7 @@ export default function LedgerManager({
         onSave={handleEdit}
         wallets={wallets}
         categories={categories}
+        onCategoryCreated={(newCat) => setCategories((prev) => [...prev, newCat])}
         initial={
           editTarget
             ? {

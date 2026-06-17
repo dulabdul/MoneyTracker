@@ -8,9 +8,8 @@ import type { Wallet, Category } from "../lib/supabase";
 // Custom components
 import FilterControls from "../components/FilterControls";
 import DonutChart from "../components/charts/DonutChart.astro";
-import BarChart from "../components/charts/BarChart.astro";
+import WeeklyExpensesChart from "../components/charts/WeeklyExpensesChart";
 import AreaChart from "../components/charts/AreaChart.astro";
-import BudgetProgress from "../components/charts/BudgetProgress.astro";
 import AccountManager from "../components/AccountManager";
 import QuickAddManager from "../components/QuickAddManager";
 
@@ -66,6 +65,7 @@ const incomeSegments  = liveData?.incomeByCategory  ?? [];
 const expenseSegments = liveData?.expenseByCategory ?? [];
 const monthlyHistory  = liveData?.monthlyIncomeHistory ?? [];
 const weeklyExpenses  = liveData?.weeklyExpenses ?? [];
+const prevWeeklyExpenses = liveData?.prevWeeklyExpenses ?? [];
 
 // ── Fetch wallets & categories fallbacks for Quick Add ───────────────────────
 const MOCK_WALLETS: Wallet[] = [];
@@ -285,22 +285,14 @@ Astro.response.headers.set("Cache-Control", "no-store");
           <AreaChart monthlyData={monthlyHistory.length > 0 ? monthlyHistory : undefined} />
         )}
 
-        <!-- 4. YTD Budget Summary -->
-        <div class={type !== "all" ? "md:col-span-2" : ""}>
-          <BudgetProgress
-            budgetLimit={120_000_000}
-            ytdSpent={ytdSpent}
-            ytdIncome={ytdIncome}
-            percentage={Math.min(100, Math.round((ytdSpent / 120_000_000) * 100))}
-          />
-        </div>
-
         <!-- 5. Weekly Expenses Bar (spans 1 col on md+) -->
         {(type === "all" || type === "spend") && (
           <div class="md:col-span-1">
-            <BarChart
+            <WeeklyExpensesChart
+              client:load
               title="Weekly Expenses"
-              weeklyData={weeklyExpenses.length > 0 ? weeklyExpenses : undefined}
+              weeklyData={weeklyExpenses}
+              prevWeeklyData={prevWeeklyExpenses}
             />
           </div>
         )}

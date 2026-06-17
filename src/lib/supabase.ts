@@ -61,6 +61,7 @@ export interface DashboardStats {
   expenseByCategory: CategoryBreakdown[];
   monthlyIncomeHistory: MonthlyIncome[];   // Jan–Jun this year
   weeklyExpenses: WeeklyExpense[];         // current week Mon–Sun
+  prevWeeklyExpenses: WeeklyExpense[];     // previous week Mon–Sun
   ytdExpense: number;
   ytdIncome: number;
 }
@@ -172,7 +173,12 @@ export async function fetchDashboardData(params: FilterParams = {}): Promise<Das
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
 
-    const [walletsRes, recentRes, monthlyRes, ytdRes, weekRes] = await Promise.all([
+    const prevWeekStart = new Date(weekStart);
+    prevWeekStart.setDate(weekStart.getDate() - 7);
+    const prevWeekEnd = new Date(weekEnd);
+    prevWeekEnd.setDate(weekEnd.getDate() - 7);
+
+    const [walletsRes, recentRes, monthlyRes, ytdRes, weekRes, prevWeekRes] = await Promise.all([
       supabase.from("wallets").select("id, name, balance"),
       supabase
         .from("transactions")
@@ -194,6 +200,11 @@ export async function fetchDashboardData(params: FilterParams = {}): Promise<Das
         .select("amount, type, created_at")
         .gte("created_at", weekStart.toISOString())
         .lte("created_at", weekEnd.toISOString()),
+      supabase
+        .from("transactions")
+        .select("amount, type, created_at")
+        .gte("created_at", prevWeekStart.toISOString())
+        .lte("created_at", prevWeekEnd.toISOString()),
     ]);
 
     // ── Wallets & balance ──────────────────────────────────────────────────
@@ -284,11 +295,26 @@ export async function fetchDashboardData(params: FilterParams = {}): Promise<Das
       heightPct:  Math.max(5, Math.round((expPerDay[i] / maxDay) * 100)),
     }));
 
+    // ── Prev Weekly expense data (Mon–Sun) ──────────────────────────────────
+    const prevWeekTx = prevWeekRes.data ?? [];
+    const prevExpPerDay: number[] = new Array(7).fill(0);
+    prevWeekTx.filter((t: any) => t.type === "EXPENSE").forEach((t: any) => {
+      const d = new Date(t.created_at);
+      let dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon … 7=Sun
+      prevExpPerDay[dow - 1] += t.amount;
+    });
+    const prevMaxDay = Math.max(...prevExpPerDay, 1);
+    const prevWeeklyExpenses: WeeklyExpense[] = dayLabels.map((day, i) => ({
+      day,
+      amount:     prevExpPerDay[i],
+      heightPct:  Math.max(5, Math.round((prevExpPerDay[i] / prevMaxDay) * 100)),
+    }));
+
     return {
       totalBalance, monthlyIncome, monthlyExpense,
       recentTransactions, wallets,
       incomeByCategory, expenseByCategory,
-      monthlyIncomeHistory, weeklyExpenses,
+      monthlyIncomeHistory, weeklyExpenses, prevWeeklyExpenses,
       ytdExpense, ytdIncome,
     };
   } catch {
