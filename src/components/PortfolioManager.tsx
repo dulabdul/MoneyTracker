@@ -637,6 +637,29 @@ interface PortfolioManagerProps {
 
 export default function PortfolioManager({ initialAssets }: PortfolioManagerProps) {
   const [assets, setAssets] = useState<AssetRow[]>(initialAssets);
+
+  const reloadData = useCallback(async () => {
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("assets_portfolio")
+          .select("id, asset_name, asset_type, total_units, average_buy_price, current_value, updated_at")
+          .order("asset_type", { ascending: true })
+          .order("current_value", { ascending: false });
+
+        if (!error && data) {
+          setAssets(data as AssetRow[]);
+        }
+      } catch (err) {
+        console.error("Failed to refetch assets data:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, [reloadData]);
   const [addOpen, setAddOpen] = useState(false);
   const [updateTarget, setUpdateTarget] = useState<AssetRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AssetRow | null>(null);
@@ -688,6 +711,7 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
     const cfg = ASSET_CONFIG[data.asset_type];
     const unitsStr = formatUnitsDisplay(data.total_units, data.asset_type);
     toast(`Aset "${data.asset_name}" (${unitsStr}) berhasil ditambahkan`);
+    window.dispatchEvent(new CustomEvent("refresh-data"));
   }, []);
 
   const handleUpdatePrice = useCallback(async (id: string, currentValue: number) => {
@@ -701,6 +725,7 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
     ));
     const name = assets.find((a) => a.id === id)?.asset_name ?? "Aset";
     toast(`Harga pasar "${name}" berhasil diperbarui`);
+    window.dispatchEvent(new CustomEvent("refresh-data"));
   }, [assets]);
 
   const handleDelete = useCallback(async () => {
@@ -713,6 +738,7 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
       }
       setAssets((prev) => prev.filter((a) => a.id !== deleteTarget.id));
       toast(`Aset "${deleteTarget.asset_name}" berhasil dihapus`);
+      window.dispatchEvent(new CustomEvent("refresh-data"));
       setDeleteTarget(null);
     } finally { setDeleting(false); }
   }, [deleteTarget]);

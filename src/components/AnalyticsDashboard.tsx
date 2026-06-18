@@ -1,8 +1,9 @@
+import { useState, useEffect, useCallback } from "react";
 import type {
   AnalyticsData,
   PortfolioTypeWithColor,
 } from "../lib/analytics";
-import { formatIDR, formatCompact } from "../lib/analytics";
+import { formatIDR, formatCompact, fetchAllAnalytics } from "../lib/analytics";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import FilterControls from "./FilterControls";
 
@@ -29,7 +30,27 @@ export default function AnalyticsDashboard({
   month = 6,
   period = "month",
 }: AnalyticsDashboardProps) {
-  const { summary, cashflow, networth, budget, goals } = data;
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>(data);
+
+  useEffect(() => {
+    setAnalyticsData(data);
+  }, [data]);
+
+  const reloadData = useCallback(async () => {
+    try {
+      const fresh = await fetchAllAnalytics(year, month, period);
+      setAnalyticsData(fresh);
+    } catch (err) {
+      console.error("Failed to refetch analytics data:", err);
+    }
+  }, [year, month, period]);
+
+  useEffect(() => {
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, [reloadData]);
+
+  const { summary, cashflow, networth, budget, goals } = analyticsData;
 
   return (
     <div className="w-full px-4 md:px-6 py-6 space-y-6">

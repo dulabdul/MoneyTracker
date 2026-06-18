@@ -529,9 +529,81 @@ export default function TransferManager({
       if (action === "new" && goalId) {
         setPreSelectedGoalId(goalId);
         setOpen(true);
+        // Clear query params without reloading
+        const url = new URL(window.location.href);
+        url.searchParams.delete("action");
+        url.searchParams.delete("goal_id");
+        window.history.replaceState({}, "", url.pathname + url.search);
       }
     }
   }, []);
+
+  const reloadData = useCallback(async () => {
+    if (isConfigured && supabase) {
+      try {
+        const [transferRes, walletRes, goalRes] = await Promise.all([
+          supabase
+            .from("transfers")
+            .select(`
+              id,
+              from_wallet_id,
+              from_goal_id,
+              to_wallet_id,
+              to_goal_id,
+              amount,
+              admin_fee,
+              notes,
+              transaction_date,
+              created_at,
+              from_wallet:wallets!from_wallet_id(name),
+              from_goal:financial_goals!from_goal_id(name),
+              to_wallet:wallets!to_wallet_id(name),
+              to_goal:financial_goals!to_goal_id(name)
+            `)
+            .order("transaction_date", { ascending: false }),
+          supabase
+            .from("wallets")
+            .select("id, name, balance")
+            .order("name", { ascending: true }),
+          supabase
+            .from("financial_goals")
+            .select("*")
+            .eq("status", "active")
+            .order("name", { ascending: true })
+        ]);
+
+        if (walletRes.data) {
+          setActiveWallets(walletRes.data as Wallet[]);
+        }
+        if (goalRes.data) {
+          setActiveGoals(goalRes.data as FinancialGoal[]);
+        }
+        if (transferRes.data) {
+          setTransfers((transferRes.data as any[]).map((tf) => ({
+            id: tf.id,
+            from_wallet_id: tf.from_wallet_id,
+            from_goal_id: tf.from_goal_id,
+            to_wallet_id: tf.to_wallet_id,
+            to_goal_id: tf.to_goal_id,
+            from_wallet_name: tf.from_wallet?.name ?? (tf.from_goal?.name ? "🎯 " + tf.from_goal.name : "—"),
+            to_wallet_name: tf.to_wallet?.name ?? (tf.to_goal?.name ? "🎯 " + tf.to_goal.name : "—"),
+            amount: Number(tf.amount),
+            admin_fee: Number(tf.admin_fee || 0),
+            notes: tf.notes || "",
+            transaction_date: tf.transaction_date,
+            created_at: tf.created_at,
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to refetch transfers data:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, [reloadData]);
 
   // Trigger custom toast notification
   const triggerToast = useCallback((message: string, type: "success" | "error" = "success") => {
@@ -582,8 +654,7 @@ export default function TransferManager({
 
         if (data && data.success) {
           triggerToast(`Berhasil mentransfer ${formatIDR(formData.amount)} dari ${senderName} ke ${receiverName}`);
-          // Wait 1200ms and reload to synchronize state (like Quick Add)
-          setTimeout(() => window.location.href = window.location.pathname, 1200);
+          window.dispatchEvent(new CustomEvent("refresh-data"));
         }
       } else {
         // Demo Mode - Mock updates in state
@@ -659,8 +730,7 @@ export default function TransferManager({
         if (error) throw error;
 
         triggerToast("Transfer berhasil dibatalkan dan saldo dikembalikan.");
-        // Wait 1200ms and reload to synchronize state (like Quick Add)
-        setTimeout(() => window.location.href = window.location.pathname, 1200);
+        window.dispatchEvent(new CustomEvent("refresh-data"));
       } else {
         // Demo Mode - mock rollback in state
         const tf = deleteTarget;

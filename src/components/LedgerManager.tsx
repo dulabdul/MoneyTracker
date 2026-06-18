@@ -745,6 +745,40 @@ export default function LedgerManager({
   const [wallets, setWallets] = useState<Wallet[]>(initialWallets);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
+  const reloadData = useCallback(async () => {
+    if (isConfigured && supabase) {
+      try {
+        const [txRes, walletRes] = await Promise.all([
+          supabase
+            .from("transactions")
+            .select("*, wallets(name), categories(name)")
+            .order("created_at", { ascending: false })
+            .limit(500),
+          supabase.from("wallets").select("id, name, balance"),
+        ]);
+
+        if (txRes.data) {
+          setTransactions(txRes.data.map((row: any) => ({
+            ...row,
+            wallet_name: row.wallets?.name ?? "—",
+            category_name: row.categories?.name ?? "—",
+          })));
+        }
+
+        if (walletRes.data) {
+          setWallets(walletRes.data);
+        }
+      } catch (err) {
+        console.error("Failed to refetch transactions data:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, [reloadData]);
+
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "spend">("all");
   const [filterPeriod, setFilterPeriod] = useState<"month" | "year" | "date">("month");
@@ -864,6 +898,7 @@ export default function LedgerManager({
     window.dispatchEvent(new CustomEvent("show-toast", {
       detail: { message: `Berhasil menambahkan transaksi "${data.description}"`, type: "success" }
     }));
+    window.dispatchEvent(new CustomEvent("refresh-data"));
   }, [wallets, categories]);
 
   const handleAddAccount = useCallback(async (data: { name: string; balance: number }) => {
@@ -974,6 +1009,7 @@ export default function LedgerManager({
     window.dispatchEvent(new CustomEvent("show-toast", {
       detail: { message: `Berhasil memperbarui transaksi "${data.description}"`, type: "success" }
     }));
+    window.dispatchEvent(new CustomEvent("refresh-data"));
     setEditTarget(null);
   }, [editTarget, wallets, categories]);
 
@@ -1003,6 +1039,7 @@ export default function LedgerManager({
     window.dispatchEvent(new CustomEvent("show-toast", {
       detail: { message: `Berhasil menghapus transaksi "${targetName}"`, type: "success" }
     }));
+    window.dispatchEvent(new CustomEvent("refresh-data"));
     setDeleteTarget(null);
   }, [deleteTarget]);
 

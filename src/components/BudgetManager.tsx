@@ -257,6 +257,61 @@ export default function BudgetManager({
     setBudgets(initialBudgets);
   }, [initialBudgets]);
 
+  const reloadData = useCallback(async () => {
+    if (isConfigured && supabase) {
+      try {
+        const sDate = new Date(activeYear, activeMonth - 1, 1);
+        const eDate = new Date(activeYear, activeMonth, 0, 23, 59, 59, 999);
+
+        const [budgetRes, txRes] = await Promise.all([
+          supabase
+            .from("budgets")
+            .select("id, category_id, limit_amount, month, year")
+            .eq("month", activeMonth)
+            .eq("year", activeYear),
+          supabase
+            .from("transactions")
+            .select("category_id, amount")
+            .eq("type", "EXPENSE")
+            .gte("created_at", sDate.toISOString())
+            .lte("created_at", eDate.toISOString())
+        ]);
+
+        const spentMap: Record<string, number> = {};
+        if (txRes.data) {
+          txRes.data.forEach((tx: any) => {
+            const catId = tx.category_id;
+            const amt = Number(tx.amount);
+            spentMap[catId] = (spentMap[catId] || 0) + amt;
+          });
+        }
+
+        if (budgetRes.data) {
+          const freshBudgets = budgetRes.data.map((b) => {
+            const cat = categories.find((c) => c.id === b.category_id);
+            return {
+              id: b.id,
+              category_id: b.category_id,
+              category_name: cat ? cat.name : "—",
+              limit_amount: Number(b.limit_amount),
+              total_spent: spentMap[b.category_id] || 0,
+              month: b.month,
+              year: b.year
+            };
+          });
+          setBudgets(freshBudgets);
+        }
+      } catch (err) {
+        console.error("Failed to refetch budget data:", err);
+      }
+    }
+  }, [activeYear, activeMonth, categories]);
+
+  useEffect(() => {
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, [reloadData]);
+
   // Trigger custom toast notification
   const triggerToast = useCallback((message: string, type: "success" | "error" = "success") => {
     window.dispatchEvent(
@@ -358,6 +413,7 @@ export default function BudgetManager({
         setBudgets((prev) => [newBudget, ...prev]);
         triggerToast(`Anggaran untuk "${categoryName}" berhasil ditetapkan.`);
       }
+      window.dispatchEvent(new CustomEvent("refresh-data"));
     },
     [editingBudget, categories, activeMonth, activeYear, getSpentForCategory, triggerToast]
   );
@@ -381,6 +437,7 @@ export default function BudgetManager({
 
       setBudgets((prev) => prev.filter((b) => b.id !== deleteTarget.id));
       triggerToast(`Anggaran kategori "${deleteTarget.category_name}" telah dihapus.`);
+      window.dispatchEvent(new CustomEvent("refresh-data"));
       setDeleteTarget(null);
     } finally {
       setDeleting(false);

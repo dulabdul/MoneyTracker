@@ -283,6 +283,37 @@ export default function GoalManager({ initialGoals }: GoalManagerProps) {
     setGoals(initialGoals);
   }, [initialGoals]);
 
+  const reloadData = useCallback(async () => {
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("financial_goals")
+          .select("*")
+          .order("target_date", { ascending: true });
+
+        if (!error && data) {
+          setGoals(data.map((g: any) => ({
+            id: g.id,
+            name: g.name,
+            target_amount: Number(g.target_amount),
+            current_amount: Number(g.current_amount),
+            target_date: g.target_date,
+            status: g.status as "active" | "achieved" | "paused",
+            notes: g.notes || "",
+            created_at: g.created_at,
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to refetch goals data:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, [reloadData]);
+
   // Trigger toast
   const triggerToast = useCallback((message: string, type: "success" | "error" = "success") => {
     window.dispatchEvent(
@@ -412,6 +443,7 @@ export default function GoalManager({ initialGoals }: GoalManagerProps) {
         setGoals((prev) => [newGoal, ...prev]);
         triggerToast(`Kantong tabungan "${formData.name}" berhasil dibuat.`);
       }
+      window.dispatchEvent(new CustomEvent("refresh-data"));
     },
     [editingGoal, triggerToast]
   );
@@ -435,6 +467,7 @@ export default function GoalManager({ initialGoals }: GoalManagerProps) {
 
       setGoals((prev) => prev.filter((g) => g.id !== deleteTarget.id));
       triggerToast(`Kantong tabungan "${deleteTarget.name}" telah dihapus.`);
+      window.dispatchEvent(new CustomEvent("refresh-data"));
       setDeleteTarget(null);
     } finally {
       setDeleting(false);

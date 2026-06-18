@@ -53,8 +53,15 @@ export default function QuickAddManager({
       detail: { message: `Berhasil menambahkan transaksi "${data.description}"`, type: "success" }
     }));
     setOpen(false);
-    // Refresh page after short delay to sync dashboard charts
-    setTimeout(() => window.location.reload(), 1200);
+
+    // Notify other components on the page that data has changed
+    window.dispatchEvent(new CustomEvent("refresh-data"));
+
+    // Only reload the page on the homepage, as it contains server-rendered static Astro chart components
+    const isHomepage = window.location.pathname === "/";
+    if (isHomepage) {
+      setTimeout(() => window.location.reload(), 1200);
+    }
   }
 
   return (
