@@ -68,21 +68,9 @@ const monthlyHistory  = liveData?.monthlyIncomeHistory ?? [];
 const weeklyExpenses  = liveData?.weeklyExpenses ?? [];
 const prevWeeklyExpenses = liveData?.prevWeeklyExpenses ?? [];
 
-// ── Fetch wallets & categories fallbacks for Quick Add ───────────────────────
+// ── Wallet list for AccountManager ───────────────────────────────────────────
 const MOCK_WALLETS: Wallet[] = [];
-const MOCK_CATEGORIES: Category[] = [];
-
 let wallets: Wallet[] = liveData?.wallets ?? MOCK_WALLETS;
-let categories: Category[] = MOCK_CATEGORIES;
-
-if (isConfigured && supabase) {
-  try {
-    const { data: catRes } = await supabase.from("categories").select("id, name, type");
-    if (catRes) categories = catRes;
-  } catch {
-    // fallback
-  }
-}
 
 // ── Cache headers ─────────────────────────────────────────────────────────────
 Astro.response.headers.set("Cache-Control", "no-store");

@@ -5,14 +5,18 @@ import type { Wallet, Category } from "../lib/supabase";
 import type { TxFormData } from "./LedgerManager";
 
 export default function QuickAddManager({
-  wallets,
-  categories,
+  wallets: initialPropWallets,
+  categories: initialPropCategories,
 }: {
-  wallets: Wallet[];
-  categories: Category[];
+  wallets?: Wallet[];
+  categories?: Category[];
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [wallets, setWallets] = useState<Wallet[]>(initialPropWallets || []);
+  const [categories, setCategories] = useState<Category[]>(initialPropCategories || []);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     function handleOpen() {
@@ -21,6 +25,28 @@ export default function QuickAddManager({
     window.addEventListener("open-quick-add", handleOpen);
     return () => window.removeEventListener("open-quick-add", handleOpen);
   }, []);
+
+  // Fetch wallets and categories client-side when dialog opens
+  useEffect(() => {
+    if (open && isConfigured && supabase) {
+      async function loadOptions() {
+        setLoading(true);
+        try {
+          const [wRes, cRes] = await Promise.all([
+            supabase.from("wallets").select("id, name, balance").order("name", { ascending: true }),
+            supabase.from("categories").select("id, name, type").order("name", { ascending: true }),
+          ]);
+          if (wRes.data) setWallets(wRes.data);
+          if (cRes.data) setCategories(cRes.data);
+        } catch (e) {
+          console.error("Failed to load Quick Add options:", e);
+        } finally {
+          setLoading(false);
+        }
+      }
+      loadOptions();
+    }
+  }, [open]);
 
   async function handleSave(data: TxFormData) {
     if (isConfigured && supabase) {
@@ -41,6 +67,10 @@ export default function QuickAddManager({
       const delta = getTransactionDelta(data.amount, data.type);
       const updatedWallet = await adjustWalletBalance(data.wallet_id, delta);
       if (updatedWallet) {
+        // Update local wallets state to reflect balance change
+        setWallets((prev) =>
+          prev.map((w) => (w.id === updatedWallet.id ? updatedWallet : w))
+        );
         window.dispatchEvent(new CustomEvent("wallet-balance-updated", {
           detail: { walletId: updatedWallet.id, newBalance: updatedWallet.balance }
         }));

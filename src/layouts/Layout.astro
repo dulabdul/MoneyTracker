@@ -2,8 +2,6 @@
 import "../styles/global.css";
 import ToastContainer from "../components/ui/ToastContainer";
 import QuickAddManager from "../components/QuickAddManager";
-import { supabase, isConfigured } from "../lib/supabase";
-import type { Wallet, Category } from "../lib/supabase";
 
 interface Props {
   title?: string;
@@ -25,23 +23,6 @@ const isGoals = pathname.startsWith("/financial-goals");
 const isAnalytics = pathname.startsWith("/analytics");
 
 const isProd = import.meta.env.PROD;
-
-// Fetch wallets and categories globally for the quick add manager on all pages
-let wallets: Wallet[] = [];
-let categories: Category[] = [];
-
-if (isConfigured && supabase) {
-  try {
-    const [walletRes, catRes] = await Promise.all([
-      supabase.from("wallets").select("id, name, balance"),
-      supabase.from("categories").select("id, name, type")
-    ]);
-    if (walletRes.data) wallets = walletRes.data;
-    if (catRes.data) categories = catRes.data;
-  } catch (err) {
-    console.error("[Layout.astro] Failed to fetch layout data:", err);
-  }
-}
 ---
 
 <!DOCTYPE html>
@@ -435,7 +416,7 @@ if (isConfigured && supabase) {
       desktopQuickAdd?.addEventListener("click", handleQuickAdd);
       mobileQuickAdd?.addEventListener("click", handleQuickAdd);
     </script>
-    <QuickAddManager client:only="react" wallets={wallets} categories={categories} />
+    <QuickAddManager client:only="react" />
     <ToastContainer client:load />
   </body>
 </html>
