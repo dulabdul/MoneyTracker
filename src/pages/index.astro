@@ -12,6 +12,7 @@ import WeeklyExpensesChart from "../components/charts/WeeklyExpensesChart";
 import AreaChart from "../components/charts/AreaChart.astro";
 import AccountManager from "../components/AccountManager";
 import QuickAddManager from "../components/QuickAddManager";
+import DashboardGoalsSummary from "../components/charts/DashboardGoalsSummary.astro";
 
 // ── Parse query params ────────────────────────────────────────────────────────
 const url = Astro.url;
@@ -297,9 +298,14 @@ Astro.response.headers.set("Cache-Control", "no-store");
           </div>
         )}
 
-        <!-- 6. Account Balance Summary (spans 1 col on md+ or 2 if Weekly Expenses is hidden) -->
-        <div class={(type === "all" || type === "spend") ? "md:col-span-1" : "md:col-span-2"}>
+        <!-- 6. Account Balance Summary -->
+        <div class="md:col-span-1">
           <AccountManager client:only="react" initialAccounts={wallets} />
+        </div>
+
+        <!-- 7. Financial Goals Summary -->
+        <div class="md:col-span-1">
+          <DashboardGoalsSummary />
         </div>
 
       </div>

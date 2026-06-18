@@ -424,63 +424,74 @@ export function TxFormDialog({
                   </button>
                 )}
               </div>
-              {isAddingCategory ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 relative">
-                    <Input
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      placeholder="Nama kategori..."
-                      className="rounded-xl border-border/80 bg-background h-10 text-sm pr-8"
-                      disabled={isAddingCategoryLoading}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleCreateCategoryInline();
-                        }
-                      }}
-                    />
-                    {isAddingCategoryLoading && (
-                      <span className="absolute right-2.5 top-3.5 h-3.5 w-3.5 rounded-full border-2 border-teal-500/20 border-t-teal-500 animate-spin" />
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCreateCategoryInline}
-                    disabled={isAddingCategoryLoading}
-                    className="h-10 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    Simpan
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddingCategory(false);
-                      setNewCategoryName("");
-                      setAddingCategoryError(null);
-                    }}
-                    disabled={isAddingCategoryLoading}
-                    className="h-10 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-foreground border border-border/80 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-xs flex items-center justify-center transition-all cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                </div>
-              ) : (
-                <Select value={form.category_id ?? ""} onValueChange={(v) => setForm((p) => ({ ...p, category_id: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border/80 rounded-xl">
-                    {filteredCategories.map((c) => (
-                      <SelectItem key={c.id} value={c.id} className="text-sm rounded-lg">{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {addingCategoryError && <p className="text-xs text-rose-500 font-medium mt-1">{addingCategoryError}</p>}
+              <Select
+                value={form.category_id ?? ""}
+                onValueChange={(v) => setForm((p) => ({ ...p, category_id: v }))}
+                disabled={isAddingCategory}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih..." />
+                </SelectTrigger>
+                <SelectContent className="bg-card border border-border/80 rounded-xl">
+                  {filteredCategories.map((c) => (
+                    <SelectItem key={c.id} value={c.id} className="text-sm rounded-lg">{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.category_id && !isAddingCategory && <p className="text-xs text-rose-500 font-medium mt-1">{errors.category_id}</p>}
             </div>
           </div>
+
+          {/* New Category Inline Card Panel (Full Width) */}
+          {isAddingCategory && (
+            <div className="p-4 bg-muted/40 border border-border/80 rounded-2xl space-y-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2F7E79] dark:text-teal-400">Buat Kategori Baru</span>
+                {addingCategoryError && <span className="text-xs text-rose-500 font-medium">{addingCategoryError}</span>}
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Nama kategori baru..."
+                    className="rounded-xl border-border/80 bg-background h-10 text-sm pr-8"
+                    disabled={isAddingCategoryLoading}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleCreateCategoryInline();
+                      }
+                    }}
+                    autoFocus
+                  />
+                  {isAddingCategoryLoading && (
+                    <span className="absolute right-2.5 top-3.5 h-3.5 w-3.5 rounded-full border-2 border-teal-500/20 border-t-teal-500 animate-spin" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCreateCategoryInline}
+                  disabled={isAddingCategoryLoading}
+                  className="h-10 px-4 rounded-xl bg-[#2F7E79] hover:bg-[#1B5C58] text-white font-bold text-xs flex items-center justify-center transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Simpan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingCategory(false);
+                    setNewCategoryName("");
+                    setAddingCategoryError(null);
+                  }}
+                  disabled={isAddingCategoryLoading}
+                  className="h-10 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-foreground border border-border/80 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-xs flex items-center justify-center transition-all cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
 
           <DialogFooter className="gap-2 pt-3 border-t border-border/40 mt-6">
             <button
@@ -1140,7 +1151,7 @@ export default function LedgerManager({
                       {getAmountDisplay(tx.amount, tx.type)}
                     </TableCell>
                     <TableCell className="pr-4 py-3.5">
-                      <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setEditTarget(tx)}
                           className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all"

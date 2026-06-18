@@ -944,7 +944,7 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
 
                         {/* Actions */}
                         <td className="pr-4 py-3.5">
-                          <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-1 justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => setUpdateTarget(asset)}
                               className="flex items-center gap-1 h-7 px-2.5 rounded-lg border border-border/60 bg-background text-[10px] font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all whitespace-nowrap"

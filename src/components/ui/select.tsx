@@ -45,7 +45,7 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         // Full-width, proper height, brand-aware focus ring, dark mode
-        "flex w-full items-center justify-between gap-2 rounded-xl border border-input bg-background px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors outline-none select-none",
+        "flex w-full items-center justify-between gap-2 rounded-xl border border-input bg-background px-3 py-2 text-sm font-medium transition-colors outline-none select-none min-w-0 overflow-hidden [&>span]:block [&>span]:truncate [&>span]:text-left [&>span]:w-full",
         "placeholder:text-muted-foreground data-placeholder:text-muted-foreground",
         "hover:bg-muted/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30",
         "disabled:cursor-not-allowed disabled:opacity-50",

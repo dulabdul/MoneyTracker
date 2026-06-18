@@ -2,32 +2,42 @@
 import Layout from "../layouts/Layout.astro";
 import TransferManager from "../components/TransferManager";
 import { supabase, isConfigured } from "../lib/supabase";
-import type { TransferRow, Wallet } from "../components/TransferManager";
+import type { TransferRow, Wallet, FinancialGoal } from "../components/TransferManager";
 
 let transfers: TransferRow[] = [];
 let wallets: Wallet[] = [];
+let goals: FinancialGoal[] = [];
 
 if (isConfigured && supabase) {
   try {
-    const [transferRes, walletRes] = await Promise.all([
+    const [transferRes, walletRes, goalRes] = await Promise.all([
       supabase
         .from("transfers")
         .select(`
           id,
           from_wallet_id,
+          from_goal_id,
           to_wallet_id,
+          to_goal_id,
           amount,
           admin_fee,
           notes,
           transaction_date,
           created_at,
           from_wallet:wallets!from_wallet_id(name),
-          to_wallet:wallets!to_wallet_id(name)
+          from_goal:financial_goals!from_goal_id(name),
+          to_wallet:wallets!to_wallet_id(name),
+          to_goal:financial_goals!to_goal_id(name)
         `)
         .order("transaction_date", { ascending: false }),
       supabase
         .from("wallets")
         .select("id, name, balance")
+        .order("name", { ascending: true }),
+      supabase
+        .from("financial_goals")
+        .select("*")
+        .eq("status", "active")
         .order("name", { ascending: true })
     ]);
 
@@ -35,13 +45,19 @@ if (isConfigured && supabase) {
       wallets = walletRes.data as Wallet[];
     }
 
+    if (!goalRes.error && goalRes.data) {
+      goals = goalRes.data as FinancialGoal[];
+    }
+
     if (!transferRes.error && transferRes.data) {
       transfers = (transferRes.data as any[]).map((tf) => ({
         id: tf.id,
         from_wallet_id: tf.from_wallet_id,
+        from_goal_id: tf.from_goal_id,
         to_wallet_id: tf.to_wallet_id,
-        from_wallet_name: tf.from_wallet?.name ?? "—",
-        to_wallet_name: tf.to_wallet?.name ?? "—",
+        to_goal_id: tf.to_goal_id,
+        from_wallet_name: tf.from_wallet?.name ?? (tf.from_goal?.name ? "🎯 " + tf.from_goal.name : "—"),
+        to_wallet_name: tf.to_wallet?.name ?? (tf.to_goal?.name ? "🎯 " + tf.to_goal.name : "—"),
         amount: Number(tf.amount),
         admin_fee: Number(tf.admin_fee || 0),
         notes: tf.notes || "",
@@ -62,5 +78,5 @@ Astro.response.headers.set("Cache-Control", "no-store");
   title="FinGram — Account Transfers"
   description="Pindahkan saldo antar rekening dan dompet digital Anda secara instan dan aman."
 >
-  <TransferManager client:load initialTransfers={transfers} wallets={wallets} />
+  <TransferManager client:load initialTransfers={transfers} wallets={wallets} goals={goals} />
 </Layout>
