@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import ToastContainer from "../components/ui/ToastContainer";
 import QuickAddManager from "../components/QuickAddManager";
+import PwaInstallModal from "../components/PwaInstallModal";
 
 interface Props {
   title?: string;
@@ -136,6 +137,20 @@ const userInitials = getInitials(userName);
         visibility: hidden;
         pointer-events: none;
       }
+      
+      /* Custom theme icon visibility styles */
+      .dark-only {
+        display: none !important;
+      }
+      .light-only {
+        display: block !important;
+      }
+      .dark .dark-only {
+        display: block !important;
+      }
+      .dark .light-only {
+        display: none !important;
+      }
     </style>
   </head>
   <body class="bg-background text-foreground antialiased min-h-[100dvh] flex flex-col font-sans selection:bg-teal-500/30 selection:text-teal-200 transition-colors duration-200 overflow-x-hidden">
@@ -195,8 +210,13 @@ const userInitials = getInitials(userName);
     <!-- Floating mobile theme toggle at top-right corner -->
     <div class="fixed top-4 right-4 z-50 md:hidden">
       <button id="mobile-theme-toggle" type="button" class="h-9 w-9 rounded-full border border-border bg-card/85 dark:bg-card/75 backdrop-blur-md flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer shadow-md transition-all active:scale-95" aria-label="Toggle Theme">
-        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <!-- Sun Icon (visible in dark mode to switch to light) -->
+        <svg class="h-4.5 w-4.5 block dark-only" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <!-- Moon Icon (visible in light mode to switch to dark) -->
+        <svg class="h-4.5 w-4.5 block light-only" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
         </svg>
       </button>
     </div>
@@ -326,7 +346,14 @@ const userInitials = getInitials(userName);
 
             <!-- Theme Switcher -->
             <button id="theme-toggle" type="button" class="h-9 w-9 rounded-lg border border-border flex items-center justify-center bg-card/40 text-muted-foreground hover:text-foreground cursor-pointer hover:bg-card transition-all" aria-label="Toggle Theme">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <!-- Sun Icon (visible in dark mode to switch to light) -->
+              <svg class="h-4 w-4 block dark-only" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <!-- Moon Icon (visible in light mode to switch to dark) -->
+              <svg class="h-4 w-4 block light-only" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+              </svg>
             </button>
           </div>
         </header>
@@ -626,6 +653,7 @@ const userInitials = getInitials(userName);
       });
     </script>
     <QuickAddManager client:only="react" />
+    {isOverview && <PwaInstallModal client:only="react" />}
     <ToastContainer client:load />
   </body>
 </html>
