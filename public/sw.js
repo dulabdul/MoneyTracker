@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fingram-cache-v2';
+const CACHE_NAME = 'monty-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.webmanifest',
   '/favicon.svg',
-  '/icon.svg',
-  '/icon-maskable.svg'
+  '/favicon.ico',
+  '/logo.png',
+  '/loading-spinner.png'
 ];
 
 self.addEventListener('install', (event) => {

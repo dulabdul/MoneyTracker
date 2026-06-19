@@ -7,10 +7,61 @@ export type TransactionType =
   | "INVESTMENT_BUY"
   | "INVESTMENT_SELL";
 
+export type WalletAccountType = 'cash' | 'bank' | 'ewallet' | 'paylater' | 'credit_card';
+
 export interface Wallet {
   id: string;
   name: string;
   balance: number;
+  account_type: WalletAccountType;
+  credit_limit: number;
+  billing_date: number | null;
+  billing_month_offset: number; // 0 = bulan berjalan, 1 = bulan berikutnya
+  due_date: number | null;
+  due_month_offset: number;     // 0 = bulan berjalan, 1 = bulan berikutnya
+}
+
+// ─── Credit Account Helpers ────────────────────────────────────────────────────
+export function isCreditAccount(wallet: Wallet): boolean {
+  return wallet.account_type === 'paylater' || wallet.account_type === 'credit_card';
+}
+
+/** Outstanding debt on a credit account (positive number, e.g. 500000 means Rp 500k owed) */
+export function getCreditUsed(wallet: Wallet): number {
+  return Math.max(0, -(wallet.balance ?? 0));
+}
+
+/** Remaining credit available */
+export function getCreditAvailable(wallet: Wallet): number {
+  return Math.max(0, (wallet.credit_limit ?? 0) - getCreditUsed(wallet));
+}
+
+/** Usage percentage 0–100 */
+export function getCreditUsagePercent(wallet: Wallet): number {
+  if (!wallet.credit_limit || wallet.credit_limit === 0) return 0;
+  return Math.min(100, Math.round((getCreditUsed(wallet) / wallet.credit_limit) * 100));
+}
+
+/** Human-readable label for account type */
+export function getAccountTypeLabel(type: WalletAccountType): string {
+  const labels: Record<WalletAccountType, string> = {
+    cash: 'Tunai',
+    bank: 'Bank',
+    ewallet: 'E-Wallet',
+    paylater: 'PayLater',
+    credit_card: 'Kartu Kredit',
+  };
+  return labels[type] ?? type;
+}
+
+/**
+ * Returns a compact human-readable date label.
+ * e.g. getCreditDateLabel(15, 0) → "tgl 15 bln ini"
+ *      getCreditDateLabel(25, 1) → "tgl 25 bln depan"
+ */
+export function getCreditDateLabel(day: number | null, monthOffset: number): string {
+  if (!day) return '—';
+  return `tgl ${day} ${monthOffset === 1 ? 'bln depan' : 'bln ini'}`;
 }
 
 export interface Category {
@@ -178,136 +229,88 @@ export async function fetchDashboardData(params: FilterParams = {}): Promise<Das
     const prevWeekEnd = new Date(weekEnd);
     prevWeekEnd.setDate(weekEnd.getDate() - 7);
 
-    const [walletsRes, recentRes, monthlyRes, ytdRes, weekRes, prevWeekRes] = await Promise.all([
-      supabase.from("wallets").select("id, name, balance"),
-      supabase
-        .from("transactions")
-        .select("*, wallets(name), categories(name)")
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("transactions")
-        .select("amount, type, categories(name)")
-        .gte("created_at", startStr)
-        .lte("created_at", endStr),
-      supabase
-        .from("transactions")
-        .select("amount, type, categories(name), created_at")
-        .gte("created_at", yearStartStr)
-        .lte("created_at", yearEndStr),
-      supabase
-        .from("transactions")
-        .select("amount, type, created_at")
-        .gte("created_at", weekStart.toISOString())
-        .lte("created_at", weekEnd.toISOString()),
-      supabase
-        .from("transactions")
-        .select("amount, type, created_at")
-        .gte("created_at", prevWeekStart.toISOString())
-        .lte("created_at", prevWeekEnd.toISOString()),
-    ]);
+    // Call the single consolidated dashboard stats RPC function
+    const { data, error } = await supabase.rpc("get_dashboard_stats", {
+      p_start_time: startStr,
+      p_end_time: endStr,
+      p_week_start: weekStart.toISOString(),
+      p_week_end: weekEnd.toISOString(),
+      p_prev_week_start: prevWeekStart.toISOString(),
+      p_prev_week_end: prevWeekEnd.toISOString(),
+      p_year_start: yearStartStr,
+      p_year_end: yearEndStr
+    });
+
+    if (error || !data) {
+      if (error) console.error("Error fetching dashboard stats via RPC:", error.message);
+      return null;
+    }
 
     // ── Wallets & balance ──────────────────────────────────────────────────
-    const wallets: Wallet[] = walletsRes.data ?? [];
-    const totalBalance = wallets.reduce((s, w) => s + (w.balance ?? 0), 0);
+    const wallets: Wallet[] = data.wallets ?? [];
+    const totalBalance = data.total_balance ?? 0;
 
     // ── Recent transactions ────────────────────────────────────────────────
-    const recentTransactions: TransactionRow[] = (recentRes.data ?? []).map((row: any) => ({
-      ...row,
-      wallet_name:   row.wallets?.name   ?? "—",
-      category_name: row.categories?.name ?? "—",
-    }));
+    const recentTransactions: TransactionRow[] = data.recent_transactions ?? [];
 
     // ── Monthly income / expense ───────────────────────────────────────────
-    const monthly = monthlyRes.data ?? [];
-    const monthlyIncome  = monthly.filter((t: any) => t.type === "INCOME").reduce((s: number, t: any) => s + t.amount, 0);
-    const monthlyExpense = monthly.filter((t: any) => t.type === "EXPENSE").reduce((s: number, t: any) => s + t.amount, 0);
+    const monthlyIncome  = data.monthly_income ?? 0;
+    const monthlyExpense = data.monthly_expense ?? 0;
 
     // ── Income by category (month) ─────────────────────────────────────────
-    const incomeTx = monthly.filter((t: any) => t.type === "INCOME");
-    const incomeCatMap: Record<string, number> = {};
-    incomeTx.forEach((t: any) => {
-      const cat = (t.categories as any)?.name ?? "Lain-lain";
-      incomeCatMap[cat] = (incomeCatMap[cat] ?? 0) + t.amount;
-    });
-    const totalIncomeMonth = Object.values(incomeCatMap).reduce((s, v) => s + v, 0) || 1;
-    const incomeByCategory: CategoryBreakdown[] = Object.entries(incomeCatMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([cat, amt], i) => ({
-        category:   cat,
-        amount:     amt,
-        percentage: Math.round((amt / totalIncomeMonth) * 100),
-        color:      SEGMENT_COLORS[i % SEGMENT_COLORS.length],
-      }));
-
-    // ── Expense by category (month) ────────────────────────────────────────
-    const expenseTx = monthly.filter((t: any) => t.type === "EXPENSE");
-    const expCatMap: Record<string, number> = {};
-    expenseTx.forEach((t: any) => {
-      const cat = (t.categories as any)?.name ?? "Lain-lain";
-      expCatMap[cat] = (expCatMap[cat] ?? 0) + t.amount;
-    });
-    const totalExpenseMonth = Object.values(expCatMap).reduce((s, v) => s + v, 0) || 1;
-    const expenseByCategory: CategoryBreakdown[] = Object.entries(expCatMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([cat, amt], i) => ({
-        category:   cat,
-        amount:     amt,
-        percentage: Math.round((amt / totalExpenseMonth) * 100),
-        color:      SEGMENT_COLORS[i % SEGMENT_COLORS.length],
-      }));
-
-    // ── Monthly income history (Jan – Dec of selected year) ───────────────────────
-    const ytdTx = ytdRes.data ?? [];
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const incomePerMonth: Record<number, number> = {};
-    ytdTx.filter((t: any) => t.type === "INCOME").forEach((t: any) => {
-      const m = new Date(t.created_at).getMonth(); // 0-indexed
-      incomePerMonth[m] = (incomePerMonth[m] ?? 0) + t.amount;
-    });
-    const today = new Date();
-    const historyMonths = (year === today.getFullYear()) ? today.getMonth() + 1 : 12;
-    const monthlyIncomeHistory: MonthlyIncome[] = Array.from({ length: historyMonths }, (_, i) => ({
-      month:      monthNames[i],
-      monthIndex: i + 1,
-      income:     incomePerMonth[i] ?? 0,
+    const rawIncomeCat = data.income_by_category ?? [];
+    const totalIncomeMonth = rawIncomeCat.reduce((s: number, t: any) => s + (t.amount || 0), 0) || 1;
+    const incomeByCategory: CategoryBreakdown[] = rawIncomeCat.map((t: any, i: number) => ({
+      category:   t.category ?? "Lain-lain",
+      amount:     t.amount ?? 0,
+      percentage: Math.round(((t.amount || 0) / totalIncomeMonth) * 100),
+      color:      SEGMENT_COLORS[i % SEGMENT_COLORS.length],
     }));
 
+    // ── Expense by category (month) ────────────────────────────────────────
+    const rawExpenseCat = data.expense_by_category ?? [];
+    const totalExpenseMonth = rawExpenseCat.reduce((s: number, t: any) => s + (t.amount || 0), 0) || 1;
+    const expenseByCategory: CategoryBreakdown[] = rawExpenseCat.map((t: any, i: number) => ({
+      category:   t.category ?? "Lain-lain",
+      amount:     t.amount ?? 0,
+      percentage: Math.round(((t.amount || 0) / totalExpenseMonth) * 100),
+      color:      SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+    }));
+
+    // ── Monthly income history (Jan – Dec of selected year) ───────────────────────
+    const rawHistory = data.monthly_income_history ?? [];
+    const today = new Date();
+    const historyMonths = (year === today.getFullYear()) ? today.getMonth() + 1 : 12;
+    const monthlyIncomeHistory: MonthlyIncome[] = rawHistory
+      .slice(0, historyMonths)
+      .map((h: any) => ({
+        month:      h.month,
+        monthIndex: h.month_index,
+        income:     h.income ?? 0,
+      }));
+
     // ── YTD totals ─────────────────────────────────────────────────────────
-    const ytdExpense = ytdTx.filter((t: any) => t.type === "EXPENSE").reduce((s: number, t: any) => s + t.amount, 0);
-    const ytdIncome  = ytdTx.filter((t: any) => t.type === "INCOME").reduce((s: number, t: any) => s + t.amount, 0);
+    const ytdExpense = data.ytd_expense ?? 0;
+    const ytdIncome  = data.ytd_income ?? 0;
 
     // ── Weekly expense data (Mon–Sun) ──────────────────────────────────────
-    const weekTx = weekRes.data ?? [];
-    const dayLabels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-    const expPerDay: number[] = new Array(7).fill(0);
-    weekTx.filter((t: any) => t.type === "EXPENSE").forEach((t: any) => {
-      const d = new Date(t.created_at);
-      let dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon … 7=Sun
-      expPerDay[dow - 1] += t.amount;
-    });
-    const maxDay = Math.max(...expPerDay, 1);
-    const weeklyExpenses: WeeklyExpense[] = dayLabels.map((day, i) => ({
-      day,
-      amount:     expPerDay[i],
-      heightPct:  Math.max(5, Math.round((expPerDay[i] / maxDay) * 100)),
+    const rawWeekly = data.weekly_expenses ?? [];
+    const weeklyAmounts = rawWeekly.map((w: any) => w.amount || 0);
+    const maxDay = Math.max(...weeklyAmounts, 1);
+    const weeklyExpenses: WeeklyExpense[] = rawWeekly.map((w: any) => ({
+      day: w.day,
+      amount:     w.amount ?? 0,
+      heightPct:  Math.max(5, Math.round(((w.amount || 0) / maxDay) * 100)),
     }));
 
     // ── Prev Weekly expense data (Mon–Sun) ──────────────────────────────────
-    const prevWeekTx = prevWeekRes.data ?? [];
-    const prevExpPerDay: number[] = new Array(7).fill(0);
-    prevWeekTx.filter((t: any) => t.type === "EXPENSE").forEach((t: any) => {
-      const d = new Date(t.created_at);
-      let dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon … 7=Sun
-      prevExpPerDay[dow - 1] += t.amount;
-    });
-    const prevMaxDay = Math.max(...prevExpPerDay, 1);
-    const prevWeeklyExpenses: WeeklyExpense[] = dayLabels.map((day, i) => ({
-      day,
-      amount:     prevExpPerDay[i],
-      heightPct:  Math.max(5, Math.round((prevExpPerDay[i] / prevMaxDay) * 100)),
+    const rawPrevWeekly = data.prev_weekly_expenses ?? [];
+    const prevWeeklyAmounts = rawPrevWeekly.map((w: any) => w.amount || 0);
+    const prevMaxDay = Math.max(...prevWeeklyAmounts, 1);
+    const prevWeeklyExpenses: WeeklyExpense[] = rawPrevWeekly.map((w: any) => ({
+      day: w.day,
+      amount:     w.amount ?? 0,
+      heightPct:  Math.max(5, Math.round(((w.amount || 0) / prevMaxDay) * 100)),
     }));
 
     return {
@@ -317,7 +320,8 @@ export async function fetchDashboardData(params: FilterParams = {}): Promise<Das
       monthlyIncomeHistory, weeklyExpenses, prevWeeklyExpenses,
       ytdExpense, ytdIncome,
     };
-  } catch {
+  } catch (err: any) {
+    console.error("Fatal error in fetchDashboardData:", err);
     return null;
   }
 }
@@ -336,7 +340,7 @@ export async function adjustWalletBalance(
   // Use RPC for atomic read-modify-write to prevent race conditions
   const { data: current, error: fetchErr } = await supabase
     .from("wallets")
-    .select("id, name, balance")
+    .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .eq("id", walletId)
     .single();
   if (fetchErr || !current) return null;
@@ -346,7 +350,7 @@ export async function adjustWalletBalance(
     .from("wallets")
     .update({ balance: newBalance })
     .eq("id", walletId)
-    .select("id, name, balance")
+    .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .single();
   if (updateErr) return null;
   return updated as Wallet;
@@ -357,14 +361,23 @@ export async function adjustWalletBalance(
  */
 export async function updateWallet(
   walletId: string,
-  data: { name?: string; balance?: number }
+  data: {
+    name?: string;
+    balance?: number;
+    account_type?: string;
+    credit_limit?: number;
+    billing_date?: number | null;
+    billing_month_offset?: number;
+    due_date?: number | null;
+    due_month_offset?: number;
+  }
 ): Promise<Wallet | null> {
   if (!isConfigured || !supabase) return null;
   const { data: updated, error } = await supabase
     .from("wallets")
     .update(data)
     .eq("id", walletId)
-    .select("id, name, balance")
+    .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .single();
   if (error) return null;
   return updated as Wallet;

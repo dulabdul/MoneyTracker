@@ -1,6 +1,6 @@
 {
-  "name": "FinGram",
-  "short_name": "FinGram",
+  "name": "Monty",
+  "short_name": "Monty",
   "description": "Zero-cost personal wealth management and financial tracking application.",
   "start_url": "/",
   "display": "standalone",
@@ -9,21 +9,15 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/loading-spinner.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon.svg",
+      "src": "/loading-spinner.png",
       "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-maskable.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]

@@ -60,9 +60,7 @@ const MOCK_TRANSACTIONS: TransactionRow[] = [];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatIDR(amount: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return "Rp " + new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -518,7 +516,13 @@ export function TxFormDialog({
 // ─── Validation Schemas for Account & Category ────────────────────────────────
 const accountSchema = z.object({
   name: z.string().min(1, "Nama akun tidak boleh kosong"),
-  balance: z.coerce.number().min(0, "Saldo awal tidak boleh negatif"),
+  balance: z.coerce.number(),
+  account_type: z.enum(["cash", "bank", "ewallet", "paylater", "credit_card"]),
+  credit_limit: z.coerce.number().min(0).optional(),
+  billing_date: z.coerce.number().min(1).max(31).nullable().optional(),
+  billing_month_offset: z.number().int().min(0).max(1).optional().default(0),
+  due_date: z.coerce.number().min(1).max(31).nullable().optional(),
+  due_month_offset: z.number().int().min(0).max(1).optional().default(0),
 });
 
 const categorySchema = z.object({
@@ -527,6 +531,17 @@ const categorySchema = z.object({
 });
 
 // ─── AddAccountDialog ────────────────────────────────────────────────────────
+type AccountFormData = {
+  name: string;
+  balance: number;
+  account_type: 'cash' | 'bank' | 'ewallet' | 'paylater' | 'credit_card';
+  credit_limit?: number;
+  billing_date?: number | null;
+  billing_month_offset?: number;
+  due_date?: number | null;
+  due_month_offset?: number;
+};
+
 function AddAccountDialog({
   open,
   onClose,
@@ -534,31 +549,54 @@ function AddAccountDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onSave: (data: { name: string; balance: number }) => Promise<void>;
+  onSave: (data: AccountFormData) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [balance, setBalance] = useState<number | undefined>(undefined);
+  const [accountType, setAccountType] = useState<AccountFormData['account_type']>("cash");
+  const [creditLimit, setCreditLimit] = useState<number | undefined>(undefined);
+  const [billingDate, setBillingDate] = useState("");
+  const [billingMonthOffset, setBillingMonthOffset] = useState<0 | 1>(0);
+  const [dueDate, setDueDate] = useState("");
+  const [dueMonthOffset, setDueMonthOffset] = useState<0 | 1>(0);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const isCreditType = accountType === "paylater" || accountType === "credit_card";
 
   useEffect(() => {
     if (open) {
       setName("");
       setBalance(undefined);
+      setAccountType("cash");
+      setCreditLimit(undefined);
+      setBillingDate("");
+      setBillingMonthOffset(0);
+      setDueDate("");
+      setDueMonthOffset(0);
       setError(null);
     }
   }, [open]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const result = accountSchema.safeParse({ name, balance });
+    const result = accountSchema.safeParse({
+      name,
+      balance: isCreditType ? 0 : (balance ?? 0),
+      account_type: accountType,
+      credit_limit: isCreditType ? (creditLimit ?? 0) : 0,
+      billing_date: billingDate ? parseInt(billingDate, 10) : null,
+      billing_month_offset: billingMonthOffset,
+      due_date: dueDate ? parseInt(dueDate, 10) : null,
+      due_month_offset: dueMonthOffset,
+    });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
     }
     setSaving(true);
     try {
-      await onSave(result.data);
+      await onSave(result.data as AccountFormData);
       onClose();
     } catch (err: any) {
       setError(err.message || "Gagal menyimpan akun");
@@ -567,27 +605,60 @@ function AddAccountDialog({
     }
   }
 
+  const accountTypeOptions: { value: AccountFormData['account_type']; label: string; icon: string }[] = [
+    { value: "cash",        label: "Tunai",        icon: "💵" },
+    { value: "bank",        label: "Bank",         icon: "🏦" },
+    { value: "ewallet",     label: "E-Wallet",     icon: "📱" },
+    { value: "paylater",    label: "PayLater",     icon: "⚡" },
+    { value: "credit_card", label: "Kartu Kredit", icon: "💳" },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[480px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40">
           <DialogTitle className="text-base font-bold text-foreground">
             Tambah Akun Baru
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Nama Akun</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: BCA Utama, ShopeePay"
-                className="rounded-xl border-border/80 bg-background h-10 text-sm"
-              />
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
+          {/* Account Type Selector */}
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Jenis Akun</Label>
+            <div className="grid grid-cols-5 gap-2">
+              {accountTypeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setAccountType(opt.value)}
+                  className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border text-[10px] font-bold transition-all ${
+                    accountType === opt.value
+                      ? "border-[#2F7E79] bg-[#2F7E79]/10 text-[#1B5C58] dark:text-teal-400 shadow-sm"
+                      : "border-border/60 text-muted-foreground hover:border-border hover:bg-muted/50"
+                  }`}
+                >
+                  <span className="text-base">{opt.icon}</span>
+                  <span className="leading-tight text-center">{opt.label}</span>
+                </button>
+              ))}
             </div>
+          </div>
 
+          {/* Account Name */}
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Nama Akun</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={isCreditType ? "Contoh: SPayLater, BCA Mastercard" : "Contoh: BCA Utama, ShopeePay"}
+              className="rounded-xl border-border/80 bg-background h-10 text-sm"
+              autoFocus
+            />
+          </div>
+
+          {/* Balance — only for non-credit accounts */}
+          {!isCreditType && (
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Saldo Awal (IDR)</Label>
               <CurrencyInput
@@ -596,7 +667,115 @@ function AddAccountDialog({
                 placeholder="Rp 0"
               />
             </div>
-          </div>
+          )}
+
+          {/* Credit-specific fields */}
+          {isCreditType && (
+            <div className="p-4 rounded-2xl bg-orange-500/5 border border-orange-500/20 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Konfigurasi Kredit
+              </p>
+
+              <div className="space-y-1.5">
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Limit Kredit (IDR)</Label>
+                <CurrencyInput
+                  value={creditLimit}
+                  onChange={setCreditLimit}
+                  placeholder="Rp 0"
+                />
+                <p className="text-[10px] text-muted-foreground">Batas kredit maksimum yang diizinkan.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {/* Tanggal Closing Tagihan */}
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Tgl Closing Tagihan</Label>
+                  <div className="flex gap-1.5">
+                    <Input
+                      type="number"
+                      min={1} max={31}
+                      value={billingDate}
+                      onChange={(e) => setBillingDate(e.target.value)}
+                      placeholder="15"
+                      className="rounded-xl border-border/80 bg-background h-10 text-sm w-[70px] shrink-0"
+                    />
+                    <div className="flex rounded-xl border border-border/80 overflow-hidden flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setBillingMonthOffset(0)}
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all ${
+                          billingMonthOffset === 0
+                            ? "bg-[#2F7E79] text-white"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Bln Ini
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBillingMonthOffset(1)}
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all border-l border-border/80 ${
+                          billingMonthOffset === 1
+                            ? "bg-[#2F7E79] text-white"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Bln Depan
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground">Tanggal closing tagihan setiap bulan</p>
+                </div>
+
+                {/* Jatuh Tempo */}
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Jatuh Tempo</Label>
+                  <div className="flex gap-1.5">
+                    <Input
+                      type="number"
+                      min={1} max={31}
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      placeholder="25"
+                      className="rounded-xl border-border/80 bg-background h-10 text-sm w-[70px] shrink-0"
+                    />
+                    <div className="flex rounded-xl border border-border/80 overflow-hidden flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setDueMonthOffset(0)}
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all ${
+                          dueMonthOffset === 0
+                            ? "bg-rose-500 text-white"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Bln Ini
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDueMonthOffset(1)}
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all border-l border-border/80 ${
+                          dueMonthOffset === 1
+                            ? "bg-rose-500 text-white"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Bln Depan
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground">Batas akhir pembayaran tagihan</p>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground/80">
+                💡 Saldo awal akun kredit dimulai dari Rp 0 (tidak ada tagihan). Tagihan bertambah saat Anda mencatat pengeluaran menggunakan akun ini.
+              </p>
+            </div>
+          )}
 
           {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
 
@@ -754,7 +933,7 @@ export default function LedgerManager({
             .select("*, wallets(name), categories(name)")
             .order("created_at", { ascending: false })
             .limit(500),
-          supabase.from("wallets").select("id, name, balance"),
+          supabase.from("wallets").select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset"),
         ]);
 
         if (txRes.data) {
@@ -901,23 +1080,38 @@ export default function LedgerManager({
     window.dispatchEvent(new CustomEvent("refresh-data"));
   }, [wallets, categories]);
 
-  const handleAddAccount = useCallback(async (data: { name: string; balance: number }) => {
+  const handleAddAccount = useCallback(async (data: AccountFormData) => {
     if (isConfigured && supabase) {
       const { data: inserted, error } = await supabase
         .from("wallets")
-        .insert({ name: data.name, balance: data.balance })
-        .select()
+        .insert({
+          name: data.name,
+          balance: data.balance,
+          account_type: data.account_type,
+          credit_limit: data.credit_limit ?? 0,
+          billing_date: data.billing_date ?? null,
+          billing_month_offset: data.billing_month_offset ?? 0,
+          due_date: data.due_date ?? null,
+          due_month_offset: data.due_month_offset ?? 0,
+        })
+        .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
         .single();
       if (error) {
         setDbError(error.message);
         throw error;
       }
-      setWallets((prev) => [...prev, inserted]);
+      setWallets((prev) => [...prev, inserted as Wallet]);
     } else {
       const newAcc: Wallet = {
         id: "w_" + Math.random().toString(36).substr(2, 9),
         name: data.name,
         balance: data.balance,
+        account_type: data.account_type,
+        credit_limit: data.credit_limit ?? 0,
+        billing_date: data.billing_date ?? null,
+        billing_month_offset: data.billing_month_offset ?? 0,
+        due_date: data.due_date ?? null,
+        due_month_offset: data.due_month_offset ?? 0,
       };
       setWallets((prev) => [...prev, newAcc]);
     }
@@ -925,6 +1119,7 @@ export default function LedgerManager({
       detail: { message: `Berhasil menambahkan akun "${data.name}"`, type: "success" }
     }));
   }, []);
+
 
   const handleAddCategory = useCallback(async (data: { name: string; type: TransactionType }) => {
     if (isConfigured && supabase) {

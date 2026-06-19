@@ -95,9 +95,7 @@ const newTransferSchema = z.object({
 
 // ─── Formatters ────────────────────────────────────────────────────────────────
 function formatIDR(n: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return "Rp " + new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(n);

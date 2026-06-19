@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { WeeklyExpense } from "../../lib/supabase";
 
 interface WeeklyExpensesChartProps {
@@ -19,9 +19,7 @@ const DEFAULT_WEEK: WeeklyExpense[] = [
 
 function formatIDR(n: number) {
   if (n === 0) return "Rp 0";
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return "Rp " + new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(n);
@@ -39,12 +37,54 @@ export default function WeeklyExpensesChart({
   prevWeeklyData = [],
 }: WeeklyExpensesChartProps) {
   const [activeWeek, setActiveWeek] = useState<"this" | "prev">("this");
+  const [currentWeekData, setCurrentWeekData] = useState<WeeklyExpense[]>(weeklyData);
+  const [previousWeekData, setPreviousWeekData] = useState<WeeklyExpense[]>(prevWeeklyData);
+
+  // Sync with props
+  useEffect(() => {
+    setCurrentWeekData(weeklyData);
+  }, [weeklyData]);
+
+  useEffect(() => {
+    setPreviousWeekData(prevWeeklyData);
+  }, [prevWeeklyData]);
+
+  // Dynamic reload when data updates
+  useEffect(() => {
+    async function reloadData() {
+      try {
+        const { fetchDashboardData } = await import("../../lib/supabase");
+        // Get filters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const period = (urlParams.get("period") as any) || "month";
+        const year = parseInt(urlParams.get("year") || "2026", 10);
+        const month = parseInt(urlParams.get("month") || "6", 10);
+        const date = urlParams.get("date") || undefined;
+
+        const data = await fetchDashboardData({
+          period,
+          year,
+          month,
+          startDate: date,
+          endDate: date,
+        });
+        if (data) {
+          setCurrentWeekData(data.weeklyExpenses || []);
+          setPreviousWeekData(data.prevWeeklyExpenses || []);
+        }
+      } catch (err) {
+        console.error("Failed to reload weekly data client-side:", err);
+      }
+    }
+    window.addEventListener("refresh-data", reloadData);
+    return () => window.removeEventListener("refresh-data", reloadData);
+  }, []);
 
   // Determine active dataset
   const activeData = useMemo(() => {
-    const data = activeWeek === "this" ? weeklyData : prevWeeklyData;
+    const data = activeWeek === "this" ? currentWeekData : previousWeekData;
     return data && data.length > 0 ? data : DEFAULT_WEEK;
-  }, [activeWeek, weeklyData, prevWeeklyData]);
+  }, [activeWeek, currentWeekData, previousWeekData]);
 
   // Recalculate max amount for the active week
   const maxAmount = useMemo(() => {

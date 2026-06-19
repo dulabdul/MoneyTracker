@@ -528,3 +528,185 @@ BEGIN
   );
 END;
 $$;
+
+
+-- ────────────────────────────────────────────────────────────
+-- 6. get_dashboard_stats()
+--    Aggregated Dashboard Stats: Consolidates 6+ REST API queries into 1 RPC
+-- ────────────────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.get_dashboard_stats(
+  p_start_time timestamptz,
+  p_end_time timestamptz,
+  p_week_start timestamptz,
+  p_week_end timestamptz,
+  p_prev_week_start timestamptz,
+  p_prev_week_end timestamptz,
+  p_year_start timestamptz,
+  p_year_end timestamptz
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_total_balance numeric := 0;
+  v_wallets jsonb;
+  v_recent_transactions jsonb;
+  v_monthly_income numeric := 0;
+  v_monthly_expense numeric := 0;
+  v_income_by_category jsonb;
+  v_expense_by_category jsonb;
+  v_monthly_income_history jsonb;
+  v_weekly_expenses jsonb;
+  v_prev_weekly_expenses jsonb;
+  v_ytd_income numeric := 0;
+  v_ytd_expense numeric := 0;
+BEGIN
+  -- 1. Total Balance (liquid wallets only: cash, bank, ewallet)
+  SELECT COALESCE(SUM(balance), 0) INTO v_total_balance
+  FROM public.wallets
+  WHERE account_type NOT IN ('paylater', 'credit_card');
+
+  -- 2. Wallets List (all wallets including credit accounts, with new metadata)
+  SELECT COALESCE(jsonb_agg(row_to_json(w)), '[]'::jsonb) INTO v_wallets
+  FROM (
+    SELECT id, name, balance, account_type, credit_limit,
+           billing_date, billing_month_offset,
+           due_date, due_month_offset
+    FROM public.wallets ORDER BY name ASC
+  ) w;
+
+  -- 3. Recent Transactions
+  SELECT COALESCE(jsonb_agg(row_to_json(r)), '[]'::jsonb) INTO v_recent_transactions
+  FROM (
+    SELECT 
+      t.id,
+      t.wallet_id,
+      t.category_id,
+      t.amount,
+      t.type,
+      t.description,
+      t.created_at,
+      w.name AS wallet_name,
+      c.name AS category_name
+    FROM public.transactions t
+    LEFT JOIN public.wallets w ON t.wallet_id = w.id
+    LEFT JOIN public.categories c ON t.category_id = c.id
+    ORDER BY t.created_at DESC
+    LIMIT 5
+  ) r;
+
+  -- 4. Monthly totals
+  SELECT
+    COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0)
+  INTO v_monthly_income, v_monthly_expense
+  FROM public.transactions
+  WHERE created_at >= p_start_time AND created_at <= p_end_time;
+
+  -- 5. Income by category
+  SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb) INTO v_income_by_category
+  FROM (
+    SELECT c.name AS category, SUM(t.amount) AS amount
+    FROM public.transactions t
+    JOIN public.categories c ON t.category_id = c.id
+    WHERE t.type = 'INCOME' AND t.created_at >= p_start_time AND t.created_at <= p_end_time
+    GROUP BY c.name
+    ORDER BY amount DESC
+    LIMIT 6
+  ) sub;
+
+  -- 6. Expense by category
+  SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb) INTO v_expense_by_category
+  FROM (
+    SELECT c.name AS category, SUM(t.amount) AS amount
+    FROM public.transactions t
+    JOIN public.categories c ON t.category_id = c.id
+    WHERE t.type = 'EXPENSE' AND t.created_at >= p_start_time AND t.created_at <= p_end_time
+    GROUP BY c.name
+    ORDER BY amount DESC
+    LIMIT 6
+  ) sub;
+
+  -- 7. Monthly income history (YTD history)
+  SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb) INTO v_monthly_income_history
+  FROM (
+    SELECT
+      TO_CHAR(m.month, 'Mon') AS month,
+      EXTRACT(MONTH FROM m.month)::int AS month_index,
+      COALESCE(SUM(t.amount), 0) AS income
+    FROM generate_series(
+      p_year_start::date,
+      p_year_end::date,
+      '1 month'::interval
+    ) m(month)
+    LEFT JOIN public.transactions t ON
+      t.type = 'INCOME' AND
+      t.created_at >= m.month AND
+      t.created_at < (m.month + INTERVAL '1 month')
+    GROUP BY m.month
+    ORDER BY m.month
+  ) sub;
+
+  -- 8. Weekly expenses
+  SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb) INTO v_weekly_expenses
+  FROM (
+    SELECT
+      TO_CHAR(d.day, 'Dy') AS day,
+      EXTRACT(ISODOW FROM d.day)::int AS day_index,
+      COALESCE(SUM(t.amount), 0) AS amount
+    FROM generate_series(
+      p_week_start::date,
+      p_week_end::date,
+      '1 day'::interval
+    ) d(day)
+    LEFT JOIN public.transactions t ON
+      t.type = 'EXPENSE' AND
+      t.created_at::date = d.day
+    GROUP BY d.day
+    ORDER BY d.day
+  ) sub;
+
+  -- 9. Previous weekly expenses
+  SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb) INTO v_prev_weekly_expenses
+  FROM (
+    SELECT
+      TO_CHAR(d.day, 'Dy') AS day,
+      EXTRACT(ISODOW FROM d.day)::int AS day_index,
+      COALESCE(SUM(t.amount), 0) AS amount
+    FROM generate_series(
+      p_prev_week_start::date,
+      p_prev_week_end::date,
+      '1 day'::interval
+    ) d(day)
+    LEFT JOIN public.transactions t ON
+      t.type = 'EXPENSE' AND
+      t.created_at::date = d.day
+    GROUP BY d.day
+    ORDER BY d.day
+  ) sub;
+
+  -- 10. YTD totals
+  SELECT
+    COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0)
+  INTO v_ytd_income, v_ytd_expense
+  FROM public.transactions
+  WHERE created_at >= p_year_start AND created_at <= p_year_end;
+
+  RETURN jsonb_build_object(
+    'total_balance', v_total_balance,
+    'wallets', v_wallets,
+    'recent_transactions', v_recent_transactions,
+    'monthly_income', v_monthly_income,
+    'monthly_expense', v_monthly_expense,
+    'income_by_category', v_income_by_category,
+    'expense_by_category', v_expense_by_category,
+    'monthly_income_history', v_monthly_income_history,
+    'weekly_expenses', v_weekly_expenses,
+    'prev_weekly_expenses', v_prev_weekly_expenses,
+    'ytd_income', v_ytd_income,
+    'ytd_expense', v_ytd_expense
+  );
+END;
+$$;

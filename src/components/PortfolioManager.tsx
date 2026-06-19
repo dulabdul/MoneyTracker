@@ -141,18 +141,14 @@ export function getPnLPct(asset: AssetRow): number {
 function formatIDR(n: number): string {
   if (n >= 1_000_000_000) return `Rp ${(n / 1_000_000_000).toFixed(2)}M`;
   if (n >= 1_000_000) return `Rp ${(n / 1_000_000).toFixed(2)}jt`;
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return "Rp " + new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(n);
 }
 
 function formatIDRFull(n: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return "Rp " + new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(n);
