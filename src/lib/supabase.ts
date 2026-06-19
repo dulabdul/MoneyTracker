@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 // ─── Database Types ────────────────────────────────────────────────────────────
 export type TransactionType =
@@ -124,7 +125,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
 export const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 export const supabase = isConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? (typeof window !== "undefined"
+      ? createBrowserClient(supabaseUrl, supabaseAnonKey)
+      : createClient(supabaseUrl, supabaseAnonKey))
   : null;
 
 // ─── Color palette for chart segments ─────────────────────────────────────────
@@ -152,8 +155,8 @@ export interface FilterParams {
 }
 
 // ─── Dashboard Data Fetcher (SSR) ─────────────────────────────────────────────
-export async function fetchDashboardData(params: FilterParams = {}): Promise<DashboardStats | null> {
-  if (!isConfigured || !supabase) return null;
+export async function fetchDashboardData(supabaseClient: any, params: FilterParams = {}): Promise<DashboardStats | null> {
+  if (!isConfigured || !supabaseClient) return null;
 
   try {
     const defaultYear = 2026;
@@ -230,7 +233,7 @@ export async function fetchDashboardData(params: FilterParams = {}): Promise<Das
     prevWeekEnd.setDate(weekEnd.getDate() - 7);
 
     // Call the single consolidated dashboard stats RPC function
-    const { data, error } = await supabase.rpc("get_dashboard_stats", {
+    const { data, error } = await supabaseClient.rpc("get_dashboard_stats", {
       p_start_time: startStr,
       p_end_time: endStr,
       p_week_start: weekStart.toISOString(),

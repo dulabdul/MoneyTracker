@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import LedgerManager from "../components/LedgerManager";
-import { supabase, isConfigured } from "../lib/supabase";
+import { isConfigured } from "../lib/supabase";
 import type { TransactionRow, Wallet, Category } from "../lib/supabase";
+
+const { supabase } = Astro.locals;
 
 // ── Mock fallback (when Supabase is not configured) ────────────────────────────
 const MOCK_WALLETS: Wallet[] = [];

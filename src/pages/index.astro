@@ -2,8 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 import { getTransactionLogo } from "../lib/logoUtils";
 import { fetchDashboardData } from "../lib/supabase";
-import { supabase, isConfigured } from "../lib/supabase";
+import { isConfigured } from "../lib/supabase";
 import type { Wallet, Category } from "../lib/supabase";
+
+const { supabase, user } = Astro.locals;
+const userName = user?.user_metadata?.username || user?.user_metadata?.display_name || user?.user_metadata?.fullName || user?.email?.split("@")[0] || "Guest";
 
 // Custom components
 import FilterControls from "../components/FilterControls";
@@ -23,7 +26,7 @@ const date = url.searchParams.get("date") || undefined;
 const type = (url.searchParams.get("type") as "all" | "income" | "spend") || "all";
 
 // ── Live DB fetch ─────────────────────────────────────────────────────────────
-const liveData = await fetchDashboardData({
+const liveData = await fetchDashboardData(supabase, {
   period,
   year,
   month,
@@ -109,7 +112,7 @@ Astro.response.headers.set("Cache-Control", "no-store");
                 if (el) el.textContent = greeting;
               })();
             </script>
-            <h2 class="text-xl font-bold tracking-tight mt-0.5">Enjolin Morgeana</h2>
+            <h2 class="text-xl font-bold tracking-tight mt-0.5">{userName}</h2>
           </div>
           <div class="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white cursor-pointer hover:bg-white/20 transition-all">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

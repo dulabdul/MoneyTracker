@@ -226,19 +226,19 @@ const DEFAULT_GOALS: GoalsAnalytics = {
 
 // ─── RPC Fetchers ───────────────────────────────────────────────────────────────
 
-async function fetchAnalyticsSummary(): Promise<AnalyticsSummary> {
-  if (!isConfigured || !supabase) return DEFAULT_SUMMARY;
+async function fetchAnalyticsSummary(supabaseClient: any): Promise<AnalyticsSummary> {
+  if (!isConfigured || !supabaseClient) return DEFAULT_SUMMARY;
   try {
-    const { data, error } = await supabase.rpc("get_analytics_summary");
+    const { data, error } = await supabaseClient.rpc("get_analytics_summary");
     if (error) { console.error("[analytics] summary error:", error); return DEFAULT_SUMMARY; }
     return AnalyticsSummarySchema.parse(data);
   } catch (e) { console.error("[analytics] summary parse error:", e); return DEFAULT_SUMMARY; }
 }
 
-async function fetchCashflowAnalytics(year: number = 2026, month?: number, period: string = "month"): Promise<CashflowAnalytics> {
-  if (!isConfigured || !supabase) return DEFAULT_CASHFLOW;
+async function fetchCashflowAnalytics(supabaseClient: any, year: number = 2026, month?: number, period: string = "month"): Promise<CashflowAnalytics> {
+  if (!isConfigured || !supabaseClient) return DEFAULT_CASHFLOW;
   try {
-    const { data, error } = await supabase.rpc("get_cashflow_analytics", { 
+    const { data, error } = await supabaseClient.rpc("get_cashflow_analytics", { 
       p_year: year,
       p_month: month !== undefined ? month : null,
       p_period: period
@@ -248,19 +248,19 @@ async function fetchCashflowAnalytics(year: number = 2026, month?: number, perio
   } catch (e) { console.error("[analytics] cashflow parse error:", e); return DEFAULT_CASHFLOW; }
 }
 
-async function fetchNetWorthAnalytics(): Promise<NetWorthAnalytics> {
-  if (!isConfigured || !supabase) return DEFAULT_NETWORTH;
+async function fetchNetWorthAnalytics(supabaseClient: any): Promise<NetWorthAnalytics> {
+  if (!isConfigured || !supabaseClient) return DEFAULT_NETWORTH;
   try {
-    const { data, error } = await supabase.rpc("get_networth_analytics");
+    const { data, error } = await supabaseClient.rpc("get_networth_analytics");
     if (error) { console.error("[analytics] networth error:", error); return DEFAULT_NETWORTH; }
     return NetWorthAnalyticsSchema.parse(data);
   } catch (e) { console.error("[analytics] networth parse error:", e); return DEFAULT_NETWORTH; }
 }
 
-async function fetchBudgetAnalytics(year: number = 2026, month: number = 6, period: string = "month"): Promise<BudgetAnalytics> {
-  if (!isConfigured || !supabase) return DEFAULT_BUDGET;
+async function fetchBudgetAnalytics(supabaseClient: any, year: number = 2026, month: number = 6, period: string = "month"): Promise<BudgetAnalytics> {
+  if (!isConfigured || !supabaseClient) return DEFAULT_BUDGET;
   try {
-    const { data, error } = await supabase.rpc("get_budget_analytics", { 
+    const { data, error } = await supabaseClient.rpc("get_budget_analytics", { 
       p_year: year, 
       p_month: month,
       p_period: period
@@ -270,10 +270,10 @@ async function fetchBudgetAnalytics(year: number = 2026, month: number = 6, peri
   } catch (e) { console.error("[analytics] budget parse error:", e); return DEFAULT_BUDGET; }
 }
 
-async function fetchGoalsAnalytics(): Promise<GoalsAnalytics> {
-  if (!isConfigured || !supabase) return DEFAULT_GOALS;
+async function fetchGoalsAnalytics(supabaseClient: any): Promise<GoalsAnalytics> {
+  if (!isConfigured || !supabaseClient) return DEFAULT_GOALS;
   try {
-    const { data, error } = await supabase.rpc("get_goals_analytics");
+    const { data, error } = await supabaseClient.rpc("get_goals_analytics");
     if (error) { console.error("[analytics] goals error:", error); return DEFAULT_GOALS; }
     return GoalsAnalyticsSchema.parse(data);
   } catch (e) { console.error("[analytics] goals parse error:", e); return DEFAULT_GOALS; }
@@ -324,16 +324,17 @@ function buildAllocation(liquid: number, types: PortfolioTypeItem[]): NetWorthAl
 // ─── Main Aggregator — Single entry point ───────────────────────────────────────
 
 export async function fetchAllAnalytics(
+  supabaseClient: any,
   year: number = 2026,
   month: number = 6,
   period: string = "month",
 ): Promise<AnalyticsData> {
   const [summary, cashflow, networth, budget, goals] = await Promise.all([
-    fetchAnalyticsSummary(),
-    fetchCashflowAnalytics(year, month, period),
-    fetchNetWorthAnalytics(),
-    fetchBudgetAnalytics(year, month, period),
-    fetchGoalsAnalytics(),
+    fetchAnalyticsSummary(supabaseClient),
+    fetchCashflowAnalytics(supabaseClient, year, month, period),
+    fetchNetWorthAnalytics(supabaseClient),
+    fetchBudgetAnalytics(supabaseClient, year, month, period),
+    fetchGoalsAnalytics(supabaseClient),
   ]);
 
   return {

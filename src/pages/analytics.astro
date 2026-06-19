@@ -4,6 +4,8 @@ import AnalyticsDashboard from "../components/AnalyticsDashboard";
 import { fetchAllAnalytics } from "../lib/analytics";
 import type { AnalyticsData } from "../lib/analytics";
 
+const { supabase } = Astro.locals;
+
 // ── Parse query params ────────────────────────────────────────────────────────
 const url = Astro.url;
 const year = parseInt(url.searchParams.get("year") || "2026", 10);
@@ -11,7 +13,7 @@ const month = parseInt(url.searchParams.get("month") || "6", 10);
 const period = (url.searchParams.get("period") || "month") as "month" | "year" | "date";
 
 // ── Fetch all analytics data (5 RPC calls in parallel) ──────────────────────
-const analyticsData: AnalyticsData = await fetchAllAnalytics(year, month, period);
+const analyticsData: AnalyticsData = await fetchAllAnalytics(supabase, year, month, period);
 
 // ── Cache: short TTL for fresh data ─────────────────────────────────────────
 Astro.response.headers.set("Cache-Control", "s-maxage=60, stale-while-revalidate=300");

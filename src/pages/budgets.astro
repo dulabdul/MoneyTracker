@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import BudgetManager from "../components/BudgetManager";
-import { supabase, isConfigured } from "../lib/supabase";
+import { isConfigured } from "../lib/supabase";
 import type { BudgetRow, Category } from "../components/BudgetManager";
+
+const { supabase } = Astro.locals;
 
 // Extract month/year filters from URL, default to June 2026 to align with seed transactions
 const activeMonth = Number(Astro.url.searchParams.get("month") || 6);

@@ -1,0 +1,8 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+import AuthForm from "@/components/AuthForm";
+---
+
+<AuthLayout title="Login to Monty">
+  <AuthForm type="login" client:load />
+</AuthLayout>

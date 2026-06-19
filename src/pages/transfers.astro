@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import TransferManager from "../components/TransferManager";
-import { supabase, isConfigured } from "../lib/supabase";
+import { isConfigured } from "../lib/supabase";
 import type { TransferRow, Wallet, FinancialGoal } from "../components/TransferManager";
+
+const { supabase } = Astro.locals;
 
 let transfers: TransferRow[] = [];
 let wallets: Wallet[] = [];
