@@ -19,7 +19,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const [step, setStep] = useState<"email" | "otp">("email");
   const [otp, setOtp] = useState<string[]>(Array(8).fill(""));
   const [countdown, setCountdown] = useState(0);
-  
+
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -75,7 +75,7 @@ export default function AuthForm({ type }: AuthFormProps) {
       } else {
         setStep("otp");
         setCountdown(60);
-        showToast("Magic link and OTP sent! Check your email.", "success");
+        showToast("OTP sent! Check your email.", "success");
         // Focus first OTP input
         setTimeout(() => otpRefs.current[0]?.focus(), 100);
       }
@@ -88,7 +88,7 @@ export default function AuthForm({ type }: AuthFormProps) {
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^[0-9]*$/.test(value)) return;
-    
+
     const newOtp = [...otp];
     // Handle paste
     if (value.length > 1) {
@@ -102,7 +102,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     } else {
       newOtp[index] = value;
       setOtp(newOtp);
-      
+
       // Auto focus next
       if (value && index < 7) {
         otpRefs.current[index + 1]?.focus();
@@ -128,8 +128,8 @@ export default function AuthForm({ type }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const typesToTry: ("signup" | "email" | "magiclink")[] = type === "register" 
-        ? ["signup", "email", "magiclink"] 
+      const typesToTry: ("signup" | "email" | "magiclink")[] = type === "register"
+        ? ["signup", "email", "magiclink"]
         : ["email", "magiclink", "signup"];
 
       let sessionData = null;
@@ -182,12 +182,12 @@ export default function AuthForm({ type }: AuthFormProps) {
   return (
     <div className="w-full max-w-md p-8 bg-[#0f172a] border border-slate-800 rounded-3xl shadow-2xl relative overflow-hidden text-slate-200">
       <div className="absolute top-0 right-0 p-8 -mr-12 -mt-12 bg-emerald-500/10 blur-3xl rounded-full w-32 h-32 pointer-events-none" />
-      
+
       <div className="text-center space-y-2 mb-8 flex flex-col items-center">
         <img src="/logo.png" alt="Monty Logo" className="h-10 mx-auto drop-shadow-md mb-2" />
         <p className="text-sm text-slate-400">
-          {step === "email" 
-            ? (type === "register" ? "Enter your username and email to register" : "Enter your email to sign in via Magic Link or OTP") 
+          {step === "email"
+            ? (type === "register" ? "Enter your username and email to register" : "Enter your email to sign in via OTP")
             : "Enter the 8-digit code sent to your email"}
         </p>
       </div>
@@ -197,10 +197,10 @@ export default function AuthForm({ type }: AuthFormProps) {
           {type === "register" && (
             <div className="space-y-2">
               <Label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-slate-400">Username</Label>
-              <Input 
-                id="username" 
-                type="text" 
-                placeholder="Choose a username" 
+              <Input
+                id="username"
+                type="text"
+                placeholder="Choose a username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="h-12 px-4 rounded-xl border-slate-800 bg-slate-900 focus-visible:ring-emerald-500 text-white placeholder:text-slate-600"
@@ -211,10 +211,10 @@ export default function AuthForm({ type }: AuthFormProps) {
           )}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-400">Email Address</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              placeholder="you@example.com" 
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-12 px-4 rounded-xl border-slate-800 bg-slate-900 focus-visible:ring-emerald-500 text-white placeholder:text-slate-600"
@@ -222,9 +222,9 @@ export default function AuthForm({ type }: AuthFormProps) {
               disabled={loading}
             />
           </div>
-          
-          <Button 
-            type="submit" 
+
+          <Button
+            type="submit"
             disabled={loading || countdown > 0}
             className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-[#10b981] hover:from-[#10b981] hover:to-emerald-400 text-white font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] border-none"
           >
@@ -239,7 +239,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             ) : countdown > 0 ? (
               `Resend available in ${countdown}s`
             ) : (
-              "Send Magic Link & OTP"
+              "Send OTP Code"
             )}
           </Button>
 
@@ -282,7 +282,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             ))}
           </div>
 
-          <Button 
+          <Button
             onClick={handleVerifyOTP}
             disabled={loading || otp.some(v => v === "")}
             className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-[#10b981] hover:from-[#10b981] hover:to-emerald-400 text-white font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] border-none"
@@ -292,18 +292,18 @@ export default function AuthForm({ type }: AuthFormProps) {
 
           <div className="text-center space-y-2 mt-4">
             <p className="text-xs text-slate-400">Atau klik link langsung di email kamu</p>
-            <Button 
-              variant="link" 
-              onClick={() => handleSendOTP()} 
+            <Button
+              variant="link"
+              onClick={() => handleSendOTP()}
               disabled={countdown > 0 || loading}
               className="text-xs text-emerald-500 hover:text-emerald-400"
             >
               {countdown > 0 ? `Resend OTP in ${countdown}s` : "Resend OTP"}
             </Button>
             <div className="mt-2">
-              <Button 
-                variant="link" 
-                onClick={() => setStep("email")} 
+              <Button
+                variant="link"
+                onClick={() => setStep("email")}
                 className="text-xs text-slate-500 hover:text-slate-400"
               >
                 Change Email Address

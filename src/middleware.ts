@@ -9,6 +9,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
+  // Get current tokens from cookies
+  const accessToken = context.cookies.get("sb-access-token")?.value;
+  const refreshToken = context.cookies.get("sb-refresh-token")?.value;
+
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
@@ -16,15 +20,61 @@ export const onRequest = defineMiddleware(async (context, next) => {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
-          context.cookies.set(name, value, { ...options, path: '/' });
+          const isDeleting = !value || options.maxAge === 0 || (options.maxAge && options.maxAge < 0);
+          context.cookies.set(name, value, {
+            ...options,
+            path: '/',
+            httpOnly: !isDeleting,
+            secure: !isDeleting,
+            sameSite: isDeleting ? undefined : 'strict',
+            maxAge: isDeleting ? 0 : 7776000, // 90 days rolling
+          });
         });
       },
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+
+  // Try to authenticate using current access token
+  if (accessToken) {
+    try {
+      const { data: { user: currentUser }, error } = await supabase.auth.getUser(accessToken);
+      if (!error && currentUser) {
+        user = currentUser;
+      }
+    } catch {
+      // Ignore error and fall back to refresh token rotation
+    }
+  }
+
+  // Silent Refresh Rotation: if access token validation fails/expired but refresh token exists
+  if (!user && refreshToken) {
+    try {
+      const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+      if (!error && data.user && data.session) {
+        user = data.user;
+        
+        // Rebake rolling cookies explicitly for the response pipeline
+        context.cookies.set("sb-access-token", data.session.access_token, {
+          path: "/",
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: 7776000,
+        });
+        context.cookies.set("sb-refresh-token", data.session.refresh_token, {
+          path: "/",
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: 7776000,
+        });
+      }
+    } catch {
+      // Ignore refresh errors, unauthenticated state is handled below
+    }
+  }
 
   context.locals.supabase = supabase;
   context.locals.user = user;
