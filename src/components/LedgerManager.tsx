@@ -79,10 +79,10 @@ function formatDate(dateStr: string) {
 
 function getTypeBadge(type: TransactionType) {
   const map: Record<TransactionType, { label: string; cls: string }> = {
-    INCOME:         { label: "Pemasukan",     cls: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" },
-    EXPENSE:        { label: "Pengeluaran",   cls: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" },
-    INVESTMENT_BUY: { label: "Invest. Beli",  cls: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
-    INVESTMENT_SELL:{ label: "Invest. Jual",  cls: "bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20" },
+    INCOME: { label: "Pemasukan", cls: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" },
+    EXPENSE: { label: "Pengeluaran", cls: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" },
+    INVESTMENT_BUY: { label: "Invest. Beli", cls: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
+    INVESTMENT_SELL: { label: "Invest. Jual", cls: "bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20" },
   };
   const { label, cls } = map[type];
   return (
@@ -164,11 +164,10 @@ function Pagination({
             <button
               key={p}
               onClick={() => onPageChange(p as number)}
-              className={`h-7 min-w-[28px] px-2 flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${
-                page === p
+              className={`h-7 min-w-[28px] px-2 flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${page === p
                   ? "bg-[#1B5C58] dark:bg-[#2F7E79] text-white shadow-sm"
                   : "border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               {p}
             </button>
@@ -606,10 +605,10 @@ function AddAccountDialog({
   }
 
   const accountTypeOptions: { value: AccountFormData['account_type']; label: string; icon: string }[] = [
-    { value: "cash",        label: "Tunai",        icon: "💵" },
-    { value: "bank",        label: "Bank",         icon: "🏦" },
-    { value: "ewallet",     label: "E-Wallet",     icon: "📱" },
-    { value: "paylater",    label: "PayLater",     icon: "⚡" },
+    { value: "cash", label: "Tunai", icon: "💵" },
+    { value: "bank", label: "Bank", icon: "🏦" },
+    { value: "ewallet", label: "E-Wallet", icon: "📱" },
+    { value: "paylater", label: "PayLater", icon: "⚡" },
     { value: "credit_card", label: "Kartu Kredit", icon: "💳" },
   ];
 
@@ -632,11 +631,10 @@ function AddAccountDialog({
                   key={opt.value}
                   type="button"
                   onClick={() => setAccountType(opt.value)}
-                  className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border text-[10px] font-bold transition-all ${
-                    accountType === opt.value
+                  className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border text-[10px] font-bold transition-all ${accountType === opt.value
                       ? "border-[#2F7E79] bg-[#2F7E79]/10 text-[#1B5C58] dark:text-teal-400 shadow-sm"
                       : "border-border/60 text-muted-foreground hover:border-border hover:bg-muted/50"
-                  }`}
+                    }`}
                 >
                   <span className="text-base">{opt.icon}</span>
                   <span className="leading-tight text-center">{opt.label}</span>
@@ -706,22 +704,20 @@ function AddAccountDialog({
                       <button
                         type="button"
                         onClick={() => setBillingMonthOffset(0)}
-                        className={`flex-1 h-10 text-[10px] font-bold transition-all ${
-                          billingMonthOffset === 0
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all ${billingMonthOffset === 0
                             ? "bg-[#2F7E79] text-white"
                             : "bg-background text-muted-foreground hover:bg-muted"
-                        }`}
+                          }`}
                       >
                         Bln Ini
                       </button>
                       <button
                         type="button"
                         onClick={() => setBillingMonthOffset(1)}
-                        className={`flex-1 h-10 text-[10px] font-bold transition-all border-l border-border/80 ${
-                          billingMonthOffset === 1
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all border-l border-border/80 ${billingMonthOffset === 1
                             ? "bg-[#2F7E79] text-white"
                             : "bg-background text-muted-foreground hover:bg-muted"
-                        }`}
+                          }`}
                       >
                         Bln Depan
                       </button>
@@ -746,22 +742,20 @@ function AddAccountDialog({
                       <button
                         type="button"
                         onClick={() => setDueMonthOffset(0)}
-                        className={`flex-1 h-10 text-[10px] font-bold transition-all ${
-                          dueMonthOffset === 0
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all ${dueMonthOffset === 0
                             ? "bg-rose-500 text-white"
                             : "bg-background text-muted-foreground hover:bg-muted"
-                        }`}
+                          }`}
                       >
                         Bln Ini
                       </button>
                       <button
                         type="button"
                         onClick={() => setDueMonthOffset(1)}
-                        className={`flex-1 h-10 text-[10px] font-bold transition-all border-l border-border/80 ${
-                          dueMonthOffset === 1
+                        className={`flex-1 h-10 text-[10px] font-bold transition-all border-l border-border/80 ${dueMonthOffset === 1
                             ? "bg-rose-500 text-white"
                             : "bg-background text-muted-foreground hover:bg-muted"
-                        }`}
+                          }`}
                       >
                         Bln Depan
                       </button>
@@ -1002,8 +996,8 @@ export default function LedgerManager({
       } else if (filterPeriod === "date" && filterDate) {
         const targetD = new Date(filterDate);
         matchDate = txDate.getFullYear() === targetD.getFullYear() &&
-                    txDate.getMonth() === targetD.getMonth() &&
-                    txDate.getDate() === targetD.getDate();
+          txDate.getMonth() === targetD.getMonth() &&
+          txDate.getDate() === targetD.getDate();
       }
 
       return matchSearch && matchType && matchDate;
@@ -1030,7 +1024,7 @@ export default function LedgerManager({
   };
 
   // ── Summary for current filter (all filtered, not just page) ──────────────
-  const totalIncome  = useMemo(() => filtered.filter((t) => t.type === "INCOME").reduce((s, t) => s + t.amount, 0), [filtered]);
+  const totalIncome = useMemo(() => filtered.filter((t) => t.type === "INCOME").reduce((s, t) => s + t.amount, 0), [filtered]);
   const totalExpense = useMemo(() => filtered.filter((t) => t.type === "EXPENSE").reduce((s, t) => s + t.amount, 0), [filtered]);
 
   // ── CRUD helpers ────────────────────────────────────────────────────────────
@@ -1247,15 +1241,7 @@ export default function LedgerManager({
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Transaction Ledger</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Kelola seluruh transaksi pemasukan, pengeluaran, dan investasi Anda.</p>
         </div>
-        {/* DB Status Badge */}
-        <span className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold border mt-1 ${
-          isConfigured
-            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-            : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
-        }`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${isConfigured ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-          {isConfigured ? "Live — Supabase" : "Demo Mode"}
-        </span>
+
       </div>
 
       {/* ── Filter Controls Panel ─────────────────────────────────────── */}
@@ -1469,12 +1455,12 @@ export default function LedgerManager({
         initial={
           editTarget
             ? {
-                description: editTarget.description,
-                amount: editTarget.amount,
-                type: editTarget.type,
-                wallet_id: editTarget.wallet_id,
-                category_id: editTarget.category_id,
-              }
+              description: editTarget.description,
+              amount: editTarget.amount,
+              type: editTarget.type,
+              wallet_id: editTarget.wallet_id,
+              category_id: editTarget.category_id,
+            }
             : undefined
         }
       />

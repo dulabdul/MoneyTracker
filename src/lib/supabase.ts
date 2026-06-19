@@ -406,3 +406,52 @@ export async function deleteWallet(walletId: string): Promise<boolean> {
 export function getTransactionDelta(amount: number, type: TransactionType): number {
   return (type === "INCOME" || type === "INVESTMENT_SELL") ? amount : -amount;
 }
+
+// ─── Financial Health Score ──────────────────────────────────────────────────
+export interface FinancialHealthQuest {
+  id: string;
+  description: string;
+  status: 'success' | 'warning' | 'danger';
+}
+
+export interface FinancialHealth {
+  score: number;
+  rank_label: string;
+  quests: FinancialHealthQuest[];
+  breakdown: {
+    savings_score: number;
+    budget_score: number;
+    credit_score: number;
+    savings_rate: number;
+    credit_utilization: number;
+  };
+}
+
+export async function fetchFinancialHealth(
+  supabaseClient: any,
+  year: number,
+  month: number
+): Promise<FinancialHealth | null> {
+  if (!isConfigured || !supabaseClient) return null;
+
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabaseClient.rpc("get_financial_health_score", {
+      p_user_id: user.id,
+      p_year: year,
+      p_month: month
+    });
+
+    if (error || !data) {
+      console.error("Error fetching financial health score:", error?.message);
+      return null;
+    }
+
+    return data as FinancialHealth;
+  } catch (err: any) {
+    console.error("Fatal error in fetchFinancialHealth:", err);
+    return null;
+  }
+}

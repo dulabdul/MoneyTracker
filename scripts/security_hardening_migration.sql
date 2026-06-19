@@ -39,6 +39,16 @@ DROP POLICY IF EXISTS allow_user_goals ON public.financial_goals;
 
 
 -- ─────────────────────────────────────────────────────────────────────────
+-- PHASE 1.5: ADD user_id TO ALL TABLES IF NOT EXISTS (SAFE FOR EXISTING DATA)
+-- ─────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.wallets ADD COLUMN IF NOT EXISTS user_id uuid DEFAULT auth.uid();
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS user_id uuid DEFAULT auth.uid();
+ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS user_id uuid DEFAULT auth.uid();
+ALTER TABLE public.budgets ADD COLUMN IF NOT EXISTS user_id uuid DEFAULT auth.uid();
+ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS user_id uuid DEFAULT auth.uid();
+ALTER TABLE public.financial_goals ADD COLUMN IF NOT EXISTS user_id uuid DEFAULT auth.uid();
+
+-- ─────────────────────────────────────────────────────────────────────────
 -- PHASE 2: ENABLE ROW LEVEL SECURITY (RLS) FOR ALL CORE TABLES
 -- ─────────────────────────────────────────────────────────────────────────
 ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;

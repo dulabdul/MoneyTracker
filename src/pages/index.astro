@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getTransactionLogo } from "../lib/logoUtils";
-import { fetchDashboardData } from "../lib/supabase";
+import { fetchDashboardData, fetchFinancialHealth } from "../lib/supabase";
 import { isConfigured } from "../lib/supabase";
 import type { Wallet, Category } from "../lib/supabase";
 
@@ -16,6 +16,7 @@ import AreaChart from "../components/charts/AreaChart.astro";
 import AccountManager from "../components/AccountManager";
 import QuickAddManager from "../components/QuickAddManager";
 import DashboardGoalsSummary from "../components/charts/DashboardGoalsSummary.astro";
+import FinancialHealthWidget from "../components/FinancialHealthWidget";
 
 // ── Parse query params ────────────────────────────────────────────────────────
 const url = Astro.url;
@@ -33,6 +34,8 @@ const liveData = await fetchDashboardData(supabase, {
   startDate: date,
   endDate: date,
 });
+
+const healthData = await fetchFinancialHealth(supabase, year, month);
 
 // ── IDR formatter ─────────────────────────────────────────────────────────────
 function formatIDR(amount: number): string {
@@ -247,13 +250,17 @@ Astro.response.headers.set("Cache-Control", "no-store");
       </div>
     </div>
 
+    <!-- ── Financial Health Score (Gamification) ────────────────────── -->
+    <div class="md:col-span-5 w-full mt-6 md:mt-4">
+      <FinancialHealthWidget client:only="react" data={healthData} />
+    </div>
+
     <!-- ── Analytics & Statistics (full width) ────────────────────────── -->
     <div class="md:col-span-5 space-y-5 mt-4 md:mt-2 w-full">
       <div class="border-b border-border/60 pb-4 flex flex-col gap-1">
         <h3 class="text-base font-bold text-foreground">Analytics & Statistics</h3>
         <p class="text-xs text-muted-foreground">
           Ringkasan arus kas jangka panjang, distribusi, dan target anggaran.
-          {liveData && <span class="ml-1 text-emerald-600 dark:text-emerald-400 font-semibold">● Data langsung dari database</span>}
         </p>
       </div>
 

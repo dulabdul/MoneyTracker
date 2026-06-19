@@ -1,0 +1,183 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Disable caching for standard pages if needed, though this is static
+Astro.response.headers.set("Cache-Control", "public, max-age=3600");
+
+interface ChangelogEntry {
+  version: string;
+  date: string;
+  added?: string[];
+  improved?: string[];
+  fixed?: string[];
+}
+
+const changelogs: ChangelogEntry[] = [
+  {
+    version: "v1.2.0",
+    date: "20 Juni 2026",
+    added: [
+      "Dynamic dashboard integration for the Gamified Financial Health Score, offering live telemetry parsing (Savings, Budget compliance, and Credit Limits).",
+      "Supabase PL/pgSQL database calculation functions for score updates based on real-time monthly transactions.",
+      "Visual status rank levels ('Overlord', 'Guardian', 'Goblin') with specific color themes and subtle ambient box-shadow glow styles."
+    ],
+    improved: [
+      "Optimized query latency of Supabase RPC triggers by indexing user_id mapping keys on transactional history columns."
+    ],
+    fixed: [
+      "Fixed a rendering gap on iOS where dashboard widget headers would touch the hardware status bar screen bounds."
+    ]
+  },
+  {
+    version: "v1.1.0",
+    date: "18 Juni 2026",
+    added: [
+      "Long-Lived 90-day Auth Session Cookies to eliminate repeated login redirects for authenticated active sessions.",
+      "Row-Level Security (RLS) policies targeting core transaction table schemas to prevent cross-tenant data leaks."
+    ],
+    improved: [
+      "Hardened Security Definer permissions on atomic transaction processing RPC commands."
+    ],
+    fixed: [
+      "Fixed a critical security vulnerability where testing policies used USING (true) logic instead of auth.uid() mappings."
+    ]
+  },
+  {
+    version: "v1.0.0",
+    date: "10 Juni 2026",
+    added: [
+      "Dynamic PayLater Integration allowing users to schedule payments and track usage against overall credit limits.",
+      "Interactive Ledger Manager component supporting multi-asset transaction tracking and categorical mapping.",
+      "Monthly budgeting tracker with visual alerts and progress indicator charts."
+    ],
+    improved: [
+      "Reduced client-side bundle size using Astro's hybrid rendering and optimized server-side database fetching."
+    ]
+  }
+];
+---
+
+<Layout
+  title="monty — changelog"
+  description="Ikuti perkembangan pembaruan, perbaikan bug, dan rilis fitur terbaru dari monty."
+>
+  <div class="min-h-screen bg-background dark:bg-[#0f172a] text-foreground dark:text-slate-100 px-4 py-8 md:py-16 transition-colors duration-200">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Premium Lowercase Branding Header -->
+      <div class="mb-16 border-b border-border dark:border-[#1e293b] pb-10">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            System Updates
+          </span>
+        </div>
+        <h1 class="flex items-center gap-2 text-4xl md:text-5xl font-black tracking-tight text-foreground dark:text-white mb-4 lowercase">
+          <img src="/logo.png" alt="monty" class="h-8 md:h-10 w-auto object-contain" />
+          <span class="text-muted-foreground dark:text-slate-500 font-light">changelog</span>
+        </h1>
+        <p class="text-base text-muted-foreground dark:text-slate-400 max-w-2xl leading-relaxed">
+          Ikuti perkembangan pembaruan, perbaikan bug, dan rilis fitur terbaru. Kami selalu berusaha menghadirkan pengalaman terbaik untuk manajemen keuangan Anda.
+        </p>
+      </div>
+
+      <!-- The Timeline Container -->
+      <div class="relative pl-8 md:pl-0">
+        <!-- Center Axis / The Connective Track (aligned to left on mobile, center of column on desktop) -->
+        <div class="absolute left-[15px] md:left-[199px] top-6 bottom-6 w-[1px] bg-border dark:bg-slate-800/80"></div>
+
+        <div class="space-y-12 md:space-y-16">
+          {changelogs.map((entry) => (
+            <div class="relative grid grid-cols-1 md:grid-cols-[180px_40px_1fr] gap-4 md:gap-0 group">
+              
+              <!-- Left Column: Version Badge + Publication Date (Sticky on Desktop, Stacked on Mobile) -->
+              <div class="hidden md:flex flex-col items-end pr-6 pt-1.5 sticky top-24 self-start text-right">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 mb-2.5">
+                  {entry.version}
+                </span>
+                <time class="text-xs font-semibold text-muted-foreground dark:text-slate-500 uppercase tracking-widest">{entry.date}</time>
+              </div>
+
+              <!-- Center Axis: Glowing Emerald Radial Indicator Dot -->
+              <!-- On mobile: absolutely positioned to match left track. On desktop: centered in middle col. -->
+              <div class="absolute left-[-24px] md:relative md:left-0 flex justify-center pt-2.5">
+                <div class="w-3.5 h-3.5 rounded-full bg-background dark:bg-[#0f172a] border border-emerald-500 flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-125">
+                  <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.9)] animate-pulse"></div>
+                </div>
+              </div>
+
+              <!-- Right Column: Glassmorphic Feature Content Block -->
+              <div class="bg-card dark:bg-[#141b2d] border border-border dark:border-[#1e293b] rounded-3xl p-6 md:p-8 transition-all duration-300 hover:border-teal-500/30 dark:hover:border-slate-700/80 shadow-sm dark:shadow-none hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+                <!-- Mobile Meta Row (Hidden on Desktop) -->
+                <div class="flex flex-wrap items-center gap-3 mb-5 md:hidden">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                    {entry.version}
+                  </span>
+                  <time class="text-xs font-semibold text-muted-foreground dark:text-slate-500 uppercase tracking-widest">{entry.date}</time>
+                </div>
+
+                <!-- Segmentation Blocks with Conditional Rendering -->
+                <div class="space-y-6">
+                  
+                  {/* Added changes */}
+                  {entry.added && entry.added.length > 0 && (
+                    <div class="space-y-3">
+                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        Added
+                      </div>
+                      <ul class="space-y-2 list-none pl-0">
+                        {entry.added.map((item) => (
+                          <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300 font-sans tracking-wide leading-relaxed">
+                            <span class="mt-2.5 shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500/80 dark:bg-emerald-400/80 shadow-[0_0_6px_rgba(16,185,129,0.6)]"></span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Improved changes */}
+                  {entry.improved && entry.improved.length > 0 && (
+                    <div class="space-y-3">
+                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                        Improved
+                      </div>
+                      <ul class="space-y-2 list-none pl-0">
+                        {entry.improved.map((item) => (
+                          <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300 font-sans tracking-wide leading-relaxed">
+                            <span class="mt-2.5 shrink-0 w-1.5 h-1.5 rounded-full bg-cyan-500/60 dark:bg-cyan-400/60 shadow-[0_0_6px_rgba(34,211,238,0.6)]"></span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Fixed changes */}
+                  {entry.fixed && entry.fixed.length > 0 && (
+                    <div class="space-y-3">
+                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                        Fixed
+                      </div>
+                      <ul class="space-y-2 list-none pl-0">
+                        {entry.fixed.map((item) => (
+                          <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300 font-sans tracking-wide leading-relaxed">
+                            <span class="mt-2.5 shrink-0 w-1.5 h-1.5 rounded-full bg-rose-500/60 dark:bg-rose-400/60 shadow-[0_0_6px_rgba(244,63,94,0.6)]"></span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</Layout>
