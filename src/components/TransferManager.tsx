@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase, isConfigured } from "@/lib/supabase";
+import DatePicker from "@/components/ui/DatePicker";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface Wallet {
@@ -85,6 +86,7 @@ const newTransferSchema = z.object({
   amount: z.number().positive("Nominal transfer harus lebih besar dari 0"),
   admin_fee: z.number().min(0, "Biaya admin tidak boleh negatif").default(0),
   notes: z.string().optional(),
+  transaction_date: z.string().optional(),
 }).refine((data) => data.from_wallet_id || data.from_goal_id, {
   message: "Pilih rekening asal atau kantong tabungan asal",
   path: ["from_wallet_id"],
@@ -125,6 +127,7 @@ interface NewTransferDialogProps {
     amount: number;
     admin_fee: number;
     notes?: string;
+    transaction_date?: string;
   }) => Promise<void>;
   wallets: Wallet[];
   goals: FinancialGoal[];
@@ -147,6 +150,7 @@ function NewTransferDialog({
   const [amount, setAmount] = useState<number | undefined>(undefined);
   const [adminFee, setAdminFee] = useState<number | undefined>(undefined);
   const [notes, setNotes] = useState("");
+  const [transactionDate, setTransactionDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -158,6 +162,7 @@ function NewTransferDialog({
       setAmount(undefined);
       setAdminFee(undefined);
       setNotes("");
+      setTransactionDate(new Date().toISOString());
       setError(null);
       if (preSelectedGoalId) {
         setTransferMode("wallet_to_goal");
@@ -196,6 +201,7 @@ function NewTransferDialog({
       amount: amount ?? 0,
       admin_fee: transferMode !== "goal_to_wallet" ? adminFee ?? 0 : 0,
       notes,
+      transaction_date: transactionDate || new Date().toISOString(),
     };
 
     const parseResult = newTransferSchema.safeParse(payload);
@@ -245,6 +251,7 @@ function NewTransferDialog({
         amount: rawAmt,
         admin_fee: rawFee,
         notes: notes.trim() || undefined,
+        transaction_date: payload.transaction_date,
       });
       onClose();
     } catch (err: any) {
@@ -256,14 +263,14 @@ function NewTransferDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[440px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[440px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-visible">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40">
           <DialogTitle className="text-base font-bold text-foreground">
             Kirim Uang / Transfer Saldo
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 w-full min-w-0 overflow-hidden">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 w-full min-w-0 overflow-visible">
           <div className="space-y-4">
             {/* Destination Type Toggle (Only show if not locked by preSelectedGoalId) */}
             {!preSelectedGoalId && (
@@ -477,6 +484,20 @@ function NewTransferDialog({
                 className="rounded-xl border-border/80 bg-background h-10 text-sm"
               />
             </div>
+
+            {/* Date Picker */}
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Tanggal Transfer
+              </Label>
+              <DatePicker
+                value={transactionDate ? transactionDate.slice(0, 10) : ""}
+                onChange={(val) => {
+                  const oldTime = transactionDate ? transactionDate.slice(11, 24) : new Date().toISOString().slice(11, 24);
+                  setTransactionDate(`${val}T${oldTime}`);
+                }}
+              />
+            </div>
           </div>
 
           {error && <p className="text-xs text-rose-500 font-medium leading-tight">{error}</p>}
@@ -621,6 +642,7 @@ export default function TransferManager({
       amount: number;
       admin_fee: number;
       notes?: string;
+      transaction_date?: string;
     }) => {
       setDbError(null);
 
@@ -641,7 +663,7 @@ export default function TransferManager({
           p_amount: formData.amount,
           p_admin_fee: formData.admin_fee,
           p_notes: formData.notes || null,
-          p_transaction_date: new Date().toISOString(),
+          p_transaction_date: formData.transaction_date || new Date().toISOString(),
         });
 
         if (error) {
@@ -668,7 +690,7 @@ export default function TransferManager({
           amount: formData.amount,
           admin_fee: formData.admin_fee,
           notes: formData.notes || "",
-          transaction_date: new Date().toISOString(),
+          transaction_date: formData.transaction_date || new Date().toISOString(),
           created_at: new Date().toISOString(),
         };
 

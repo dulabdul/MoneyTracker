@@ -167,14 +167,14 @@ function AddEditGoalDialog({ open, onClose, onSave, editingGoal }: AddEditDialog
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[420px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-visible">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40">
           <DialogTitle className="text-base font-bold text-foreground">
             {editingGoal ? "Edit Target Tabungan" : "Buat Target Tabungan Baru"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 w-full min-w-0 overflow-hidden">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 w-full min-w-0 overflow-visible">
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">

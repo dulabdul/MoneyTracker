@@ -39,6 +39,7 @@ export default function WeeklyExpensesChart({
   const [activeWeek, setActiveWeek] = useState<"this" | "prev">("this");
   const [currentWeekData, setCurrentWeekData] = useState<WeeklyExpense[]>(weeklyData);
   const [previousWeekData, setPreviousWeekData] = useState<WeeklyExpense[]>(prevWeeklyData);
+  const [activeBarIdx, setActiveBarIdx] = useState<number | null>(null);
 
   // Sync with props
   useEffect(() => {
@@ -148,17 +149,18 @@ export default function WeeklyExpensesChart({
             <div className="border-t border-muted-foreground w-full" />
           </div>
 
-          {activeData.map((bar) => {
+          {activeData.map((bar, index) => {
             // Dynamic bar height based on active data and active maxAmount
             const barHeight = Math.max(5, Math.round((bar.amount / maxAmount) * 100));
 
             return (
               <div
                 key={bar.day}
+                onClick={() => setActiveBarIdx(activeBarIdx === index ? null : index)}
                 className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative px-0.5"
               >
                 {/* Custom Tooltip */}
-                <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#1B5C58] dark:bg-teal-600 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap pointer-events-none -translate-x-1/2 left-1/2">
+                <div className={`absolute -top-8 transition-opacity duration-200 bg-[#1B5C58] dark:bg-teal-600 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap pointer-events-none -translate-x-1/2 left-1/2 ${activeBarIdx === index ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"}`}>
                   {formatIDR(bar.amount)}
                 </div>
 

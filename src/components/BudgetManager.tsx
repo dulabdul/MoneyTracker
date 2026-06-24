@@ -382,12 +382,12 @@ export default function BudgetManager({
         if (isConfigured && supabase) {
           const { data, error } = await supabase
             .from("budgets")
-            .insert({
+            .upsert({
               category_id: formData.category_id,
               limit_amount: formData.limit_amount,
               month: activeMonth,
               year: activeYear,
-            })
+            }, { onConflict: 'category_id, month, year' })
             .select()
             .single();
 
@@ -408,7 +408,15 @@ export default function BudgetManager({
           year: activeYear,
         };
 
-        setBudgets((prev) => [newBudget, ...prev]);
+        setBudgets((prev) => {
+          const exists = prev.find((b) => b.category_id === newBudget.category_id);
+          if (exists) {
+            return prev.map((b) =>
+              b.category_id === newBudget.category_id ? { ...b, limit_amount: newBudget.limit_amount } : b
+            );
+          }
+          return [newBudget, ...prev];
+        });
         triggerToast(`Anggaran untuk "${categoryName}" berhasil ditetapkan.`);
       }
       window.dispatchEvent(new CustomEvent("refresh-data"));

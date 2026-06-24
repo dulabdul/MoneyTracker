@@ -38,6 +38,7 @@ import CurrencyInput from "@/components/ui/CurrencyInput";
 import { supabase, isConfigured, adjustWalletBalance, getTransactionDelta } from "@/lib/supabase";
 import type { TransactionRow, Wallet, Category, TransactionType } from "@/lib/supabase";
 import FilterControls from "./FilterControls";
+import DatePicker from "@/components/ui/DatePicker";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
@@ -49,6 +50,7 @@ export const txSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "INVESTMENT_BUY", "INVESTMENT_SELL"]),
   wallet_id: z.string().min(1, "Pilih akun"),
   category_id: z.string().min(1, "Pilih kategori"),
+  created_at: z.string().optional(),
 });
 
 export type TxFormData = z.infer<typeof txSchema>;
@@ -225,6 +227,7 @@ export function TxFormDialog({
     type: "INCOME",
     wallet_id: "",
     category_id: "",
+    created_at: new Date().toISOString(),
     ...initial,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof TxFormData, string>>>({});
@@ -250,6 +253,7 @@ export function TxFormDialog({
         type: initial?.type ?? "INCOME",
         wallet_id: initial?.wallet_id ?? "",
         category_id: initial?.category_id ?? "",
+        created_at: initial?.created_at ?? new Date().toISOString(),
       });
       setErrors({});
       setIsAddingCategory(false);
@@ -346,7 +350,7 @@ export function TxFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[460px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[460px] bg-card border border-border/80 rounded-3xl shadow-2xl p-0 overflow-visible">
         {/* Modal Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40">
           <DialogTitle className="text-base font-bold text-foreground">
@@ -395,6 +399,17 @@ export function TxFormDialog({
               onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
               placeholder="Contoh: Gaji Bulan Juni"
               className="rounded-xl border-border/80 bg-background h-10 text-sm"
+            />
+          </FormField>
+
+          {/* Date Picker */}
+          <FormField label="Tanggal Transaksi" error={errors.created_at}>
+            <DatePicker
+              value={form.created_at ? form.created_at.slice(0, 10) : ""}
+              onChange={(val) => {
+                const oldTime = form.created_at ? form.created_at.slice(11, 24) : new Date().toISOString().slice(11, 24);
+                setForm((p) => ({ ...p, created_at: `${val}T${oldTime}` }));
+              }}
             />
           </FormField>
 

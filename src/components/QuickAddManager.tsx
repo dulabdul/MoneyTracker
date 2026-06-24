@@ -120,6 +120,7 @@ export default function QuickAddManager({
           type: data.type,
           wallet_id: data.wallet_id,
           category_id: data.category_id,
+          created_at: data.created_at || new Date().toISOString(),
         });
       if (err) {
         setError(err.message);

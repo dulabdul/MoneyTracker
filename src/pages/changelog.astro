@@ -14,6 +14,21 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.1",
+    date: "24 Juni 2026",
+    added: [
+      "Custom DatePicker integration for creating and editing past transactions and transfers.",
+      "Renamed 'Ledger' menu and tab to 'Transaction' for better clarity and context."
+    ],
+    improved: [
+      "Optimized the Weekly Expense Chart UI on mobile touch devices to display tooltips on tap instead of just mouse hover."
+    ],
+    fixed: [
+      "Resolved a database duplicate constraint error when creating Budgets by introducing upsert logic and optimistic state updates.",
+      "Fixed clipping/overflow issues on modal dialogs (Transactions, Transfers, and Goals) where the custom DatePicker dropdown would get cut off."
+    ]
+  },
+  {
     version: "v1.2.0",
     date: "20 Juni 2026",
     added: [
