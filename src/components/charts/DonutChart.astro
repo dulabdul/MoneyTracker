@@ -177,6 +177,8 @@ const chartId = `donut-${Math.random().toString(36).slice(2, 8)}`;
     });
   }
 
+  window.initDonutCharts = initDonutCharts;
   initDonutCharts();
   document.addEventListener('astro:page-load', initDonutCharts);
+  window.addEventListener('refresh-data-complete', initDonutCharts);
 </script>

@@ -22,7 +22,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
             path: '/',
             httpOnly: !isDeleting,
             secure: !isDeleting,
-            sameSite: isDeleting ? undefined : 'strict',
+            sameSite: isDeleting ? undefined : 'lax',
             maxAge: isDeleting ? 0 : 7776000, // 90 days rolling
           });
         });

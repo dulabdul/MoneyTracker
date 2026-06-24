@@ -177,6 +177,8 @@ const areaPath = points.length > 0
     });
   }
 
+  window.initAreaChart = initAreaChart;
   initAreaChart();
   document.addEventListener('astro:page-load', initAreaChart);
+  window.addEventListener('refresh-data-complete', initAreaChart);
 </script>

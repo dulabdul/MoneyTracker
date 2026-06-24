@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "../lib/supabase";
 import type {
   AnalyticsData,
   PortfolioTypeWithColor,
@@ -38,7 +39,7 @@ export default function AnalyticsDashboard({
 
   const reloadData = useCallback(async () => {
     try {
-      const fresh = await fetchAllAnalytics(year, month, period);
+      const fresh = await fetchAllAnalytics(supabase, year, month, period);
       setAnalyticsData(fresh);
     } catch (err) {
       console.error("Failed to refetch analytics data:", err);

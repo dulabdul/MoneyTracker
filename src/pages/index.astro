@@ -293,7 +293,7 @@ Astro.response.headers.set("Cache-Control", "no-store");
         {(type === "all" || type === "spend") && (
           <div id="chart-expense-donut">
             <DonutChart
-              title="Expense Distribution"
+              title="Top Expense Distribution"
               centerLabel="Expenses"
               centerValue={formatIDR(monthlyExpense)}
               segments={expenseSegments.length > 0 ? expenseSegments : undefined}

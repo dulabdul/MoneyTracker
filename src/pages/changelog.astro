@@ -18,14 +18,20 @@ const changelogs: ChangelogEntry[] = [
     date: "24 Juni 2026",
     added: [
       "Custom DatePicker integration for creating and editing past transactions and transfers.",
-      "Renamed 'Ledger' menu and tab to 'Transaction' for better clarity and context."
+      "Renamed 'Ledger' menu and tab to 'Transaction' for better clarity and context.",
+      "Interactive Gamified 404 Not Found Page featuring 'Monty's Wealth Catcher' mini-game.",
+      "Category and Account filters on the Transaction ledger page using custom dropdown components."
     ],
     improved: [
       "Optimized the Weekly Expense Chart UI on mobile touch devices to display tooltips on tap instead of just mouse hover."
     ],
     fixed: [
       "Resolved a database duplicate constraint error when creating Budgets by introducing upsert logic and optimistic state updates.",
-      "Fixed clipping/overflow issues on modal dialogs (Transactions, Transfers, and Goals) where the custom DatePicker dropdown would get cut off."
+      "Fixed clipping/overflow issues on modal dialogs (Transactions, Transfers, and Goals) where the custom DatePicker dropdown would get cut off.",
+      "Fixed 90-day Auth Session cookie drops on Android webviews by changing SameSite strict to lax.",
+      "Fixed an issue where dashboard charts became unresponsive on mobile after dynamically adding a transaction.",
+      "Fixed a bug on the Analytics page where all data disappeared after using Quick Add due to an invalid RPC payload.",
+      "Eliminated an accessibility flaw where mobile browsers (iOS Safari/Android Chrome) would abruptly auto-zoom when focusing on input fields."
     ]
   },
   {

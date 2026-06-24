@@ -128,3 +128,20 @@
     @apply font-sans;
     }
 }
+
+@layer utilities {
+  /* Prevent iOS Auto-Zoom on inputs by forcing 16px base font size on mobile */
+  @media (max-width: 768px) {
+    input, 
+    select, 
+    textarea, 
+    [type="text"], 
+    [type="number"], 
+    [type="date"], 
+    [type="password"], 
+    [type="email"], 
+    [type="tel"] {
+      font-size: 16px !important;
+    }
+  }
+}
