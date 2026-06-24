@@ -975,6 +975,27 @@ export default function LedgerManager({
   const [filterDate, setFilterDate] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
 
+  const [filterWalletId, setFilterWalletId] = useState<string>("all");
+  const [filterCategoryId, setFilterCategoryId] = useState<string>("all");
+  const [walletDropdownOpen, setWalletDropdownOpen] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+
+  const walletRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (walletRef.current && !walletRef.current.contains(event.target as Node)) {
+        setWalletDropdownOpen(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setCategoryDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const [addOpen, setAddOpen] = useState(openNew);
   const [accountOpen, setAccountOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -1015,9 +1036,15 @@ export default function LedgerManager({
           txDate.getDate() === targetD.getDate();
       }
 
-      return matchSearch && matchType && matchDate;
+      // 4. Wallet (Account) Filter
+      const matchWallet = filterWalletId === "all" || tx.wallet_id === filterWalletId;
+
+      // 5. Category Filter
+      const matchCategory = filterCategoryId === "all" || tx.category_id === filterCategoryId;
+
+      return matchSearch && matchType && matchDate && matchWallet && matchCategory;
     });
-  }, [transactions, search, filterType, filterPeriod, filterYear, filterMonth, filterDate]);
+  }, [transactions, search, filterType, filterPeriod, filterYear, filterMonth, filterDate, filterWalletId, filterCategoryId]);
 
   // ── Paginated slice (memoized) ─────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -1035,6 +1062,16 @@ export default function LedgerManager({
     setFilterYear(state.year);
     setFilterMonth(state.month);
     setFilterDate(state.date);
+    setPage(1);
+  };
+
+  const handleWalletFilterChange = (id: string) => {
+    setFilterWalletId(id);
+    setPage(1);
+  };
+
+  const handleCategoryFilterChange = (id: string) => {
+    setFilterCategoryId(id);
     setPage(1);
   };
 
@@ -1279,18 +1316,137 @@ export default function LedgerManager({
       )}
 
       {/* ── Controls Row ──────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        {/* Search */}
-        <div className="relative w-full sm:max-w-sm">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
-          </svg>
-          <Input
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Cari deskripsi, kategori, akun..."
-            className="pl-9 rounded-xl border-border/80 bg-card/60 h-10 text-sm w-full"
-          />
+      <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        {/* Left: Search & Custom Dropdown Filters */}
+        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center w-full lg:max-w-3xl">
+          {/* Search */}
+          <div className="relative flex-1 sm:max-w-xs">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+            </svg>
+            <Input
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Cari deskripsi..."
+              className="pl-9 rounded-xl border-border/80 bg-card/60 h-10 text-sm w-full"
+            />
+          </div>
+
+          {/* Account Filter */}
+          <div className="relative" ref={walletRef}>
+            <button
+              onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
+              type="button"
+              className={`h-10 px-4 w-full sm:w-auto rounded-xl border bg-card/60 hover:bg-muted/40 text-xs font-bold flex items-center justify-between sm:justify-start gap-1.5 transition-all focus:outline-none cursor-pointer ${
+                filterWalletId !== "all" ? "border-[#2F7E79] text-[#2F7E79] dark:text-teal-400" : "border-border/80 text-foreground"
+              }`}
+            >
+              <span className="truncate max-w-[120px]">
+                {filterWalletId === "all"
+                  ? "Semua Akun"
+                  : wallets.find((w) => w.id === filterWalletId)?.name || "Semua Akun"}
+              </span>
+              <svg
+                className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${walletDropdownOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {walletDropdownOpen && (
+              <div className="absolute top-12 left-0 w-48 bg-card border border-border/80 rounded-2xl shadow-xl p-1.5 max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+                <button
+                  onClick={() => {
+                    handleWalletFilterChange("all");
+                    setWalletDropdownOpen(false);
+                  }}
+                  type="button"
+                  className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-[#2F7E79]/10 hover:text-[#2F7E79] dark:hover:text-teal-400 transition-colors text-foreground ${
+                    filterWalletId === "all" ? "bg-[#2F7E79]/5 text-[#2F7E79] dark:text-teal-400 font-bold" : ""
+                  }`}
+                >
+                  Semua Akun
+                </button>
+                {wallets.map((w) => (
+                  <button
+                    key={w.id}
+                    onClick={() => {
+                      handleWalletFilterChange(w.id);
+                      setWalletDropdownOpen(false);
+                    }}
+                    type="button"
+                    className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-[#2F7E79]/10 hover:text-[#2F7E79] dark:hover:text-teal-400 transition-colors text-foreground ${
+                      filterWalletId === w.id ? "bg-[#2F7E79]/5 text-[#2F7E79] dark:text-teal-400 font-bold" : ""
+                    }`}
+                  >
+                    {w.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Category Filter */}
+          <div className="relative" ref={categoryRef}>
+            <button
+              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+              type="button"
+              className={`h-10 px-4 w-full sm:w-auto rounded-xl border bg-card/60 hover:bg-muted/40 text-xs font-bold flex items-center justify-between sm:justify-start gap-1.5 transition-all focus:outline-none cursor-pointer ${
+                filterCategoryId !== "all" ? "border-[#2F7E79] text-[#2F7E79] dark:text-teal-400" : "border-border/80 text-foreground"
+              }`}
+            >
+              <span className="truncate max-w-[120px]">
+                {filterCategoryId === "all"
+                  ? "Semua Kategori"
+                  : categories.find((c) => c.id === filterCategoryId)?.name || "Semua Kategori"}
+              </span>
+              <svg
+                className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {categoryDropdownOpen && (
+              <div className="absolute top-12 left-0 w-48 bg-card border border-border/80 rounded-2xl shadow-xl p-1.5 max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+                <button
+                  onClick={() => {
+                    handleCategoryFilterChange("all");
+                    setCategoryDropdownOpen(false);
+                  }}
+                  type="button"
+                  className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-[#2F7E79]/10 hover:text-[#2F7E79] dark:hover:text-teal-400 transition-colors text-foreground ${
+                    filterCategoryId === "all" ? "bg-[#2F7E79]/5 text-[#2F7E79] dark:text-teal-400 font-bold" : ""
+                  }`}
+                >
+                  Semua Kategori
+                </button>
+                {categories.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      handleCategoryFilterChange(c.id);
+                      setCategoryDropdownOpen(false);
+                    }}
+                    type="button"
+                    className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-[#2F7E79]/10 hover:text-[#2F7E79] dark:hover:text-teal-400 transition-colors text-foreground ${
+                      filterCategoryId === c.id ? "bg-[#2F7E79]/5 text-[#2F7E79] dark:text-teal-400 font-bold" : ""
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right: Add Buttons */}

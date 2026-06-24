@@ -1,0 +1,34 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NotFoundGame from "../components/NotFoundGame";
+
+// Set proper HTTP 404 response headers
+Astro.response.status = 404;
+Astro.response.statusText = "Not Found";
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout
+  title="Monty — 404 Halaman Tidak Ditemukan"
+  description="Oops! Halaman yang Anda cari tidak dapat ditemukan di Monty."
+>
+  <div class="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] md:min-h-[calc(100vh-100px)] p-4 md:p-8 animate-in fade-in duration-300">
+    <div class="w-full max-w-xl text-center space-y-6">
+      <!-- Title & Branding Area -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-center gap-2 select-none">
+          <img src="/logo.png" alt="Monty Logo" class="h-6 object-contain opacity-80" />
+          <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest">Page Sandbox</span>
+        </div>
+        <h1 class="text-5xl font-black tracking-tight text-foreground flex items-center justify-center gap-2 select-none">
+          <span class="text-[#2F7E79] dark:text-teal-400">4</span>
+          <span>0</span>
+          <span class="text-[#2F7E79] dark:text-teal-400">4</span>
+        </h1>
+      </div>
+
+      <!-- Interactive Game Box -->
+      <NotFoundGame client:load />
+    </div>
+  </div>
+</Layout>
