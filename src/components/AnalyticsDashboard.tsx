@@ -10,6 +10,9 @@ import FilterControls from "./FilterControls";
 
 // Chart components
 import SummaryCard from "./charts/analytics/SummaryCard";
+import { FinancialRunwayCard } from "./FinancialRunwayCard";
+import { TemporalInsightsWidget } from "./TemporalInsightsWidget";
+import { AnomalyAlertCenter } from "./AnomalyAlertCenter";
 import CashflowDualLine from "./charts/analytics/CashflowDualLine";
 import ExpenseHeatmap from "./charts/analytics/ExpenseHeatmap";
 import TopExpenseDonut from "./charts/analytics/TopExpenseDonut";
@@ -73,8 +76,13 @@ export default function AnalyticsDashboard({
         month={month}
       />
 
+      {/* ── Anomaly & Leak Engine ─────────────────────────────────────────────── */}
+      {analyticsData.anomalies && (
+        <AnomalyAlertCenter alerts={analyticsData.anomalies} />
+      )}
+
       {/* ── Top Summary Cards ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <SummaryCard
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -96,18 +104,14 @@ export default function AnalyticsDashboard({
           subtitle={`${formatCompact(summary.total_to_goals)} → Goals dari ${formatCompact(summary.total_income)} income`}
           trend={summary.savings_rate > 0 ? { value: summary.savings_rate, label: "of income" } : undefined}
         />
-        <SummaryCard
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-          label="Financial Runway"
-          value={`${summary.financial_runway} bulan`}
-          subtitle={`Avg pengeluaran ${formatCompact(summary.avg_monthly_expense)}/bln`}
-          trend={summary.financial_runway >= 6 ? { value: summary.financial_runway, label: "months" } : undefined}
-        />
       </div>
+
+      {/* ── Financial Runway Subsystem ────────────────────────────────────── */}
+      <FinancialRunwayCard 
+        financialRunway={summary.financial_runway}
+        extendedRunway={summary.extended_runway}
+        threeMonthBurnRate={summary.three_month_burn_rate}
+      />
 
       {/* ── Tabs ─────────────────────────────────────────────────────────────── */}
       <Tabs defaultValue="cashflow" className="w-full">
@@ -166,6 +170,10 @@ export default function AnalyticsDashboard({
             {/* Top expenses donut */}
             <div className="lg:col-span-2">
               <TopExpenseDonut data={cashflow.top_expenses_enriched} />
+            </div>
+            {/* Temporal Insights Widget */}
+            <div className="lg:col-span-2">
+              <TemporalInsightsWidget insights={cashflow.temporal_insights} />
             </div>
           </div>
         </TabsContent>

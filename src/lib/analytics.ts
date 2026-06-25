@@ -32,7 +32,9 @@ const AnalyticsSummarySchema = z.object({
   total_to_goals: z.number(),
   savings_rate: z.number(),
   avg_monthly_expense: z.number(),
+  three_month_burn_rate: z.number(),
   financial_runway: z.number(),
+  extended_runway: z.number(),
 });
 
 const MonthlyTrendItemSchema = z.object({
@@ -51,12 +53,25 @@ const DailyHeatmapItemSchema = z.object({
 const TopExpenseItemSchema = z.object({
   category: z.string(),
   amount: z.number(),
+  count: z.number(),
+});
+
+const TemporalInsightsSchema = z.object({
+  weekend_ratio: z.number(),
+  weekday_ratio: z.number(),
+  weekend_total: z.number(),
+  weekday_total: z.number(),
+  payday_effect: z.object({
+    post_payday_avg_daily: z.number(),
+    normal_avg_daily: z.number(),
+  }),
 });
 
 const CashflowAnalyticsSchema = z.object({
   monthly_trend: z.array(MonthlyTrendItemSchema),
   daily_heatmap: z.array(DailyHeatmapItemSchema),
   top_expenses: z.array(TopExpenseItemSchema),
+  temporal_insights: TemporalInsightsSchema,
 });
 
 const PortfolioTypeItemSchema = z.object({
@@ -129,6 +144,18 @@ const GoalsAnalyticsSchema = z.object({
   overall_progress_pct: z.number(),
 });
 
+const AnomalyAlertSchema = z.object({
+  id: z.string(),
+  type: z.enum(['subscription_hike', 'spending_spike']),
+  title: z.string(),
+  description: z.string(),
+  severity: z.enum(['warning', 'critical']),
+  date: z.string().nullable(),
+  value: z.number(),
+});
+
+export type AnomalyAlert = z.infer<typeof AnomalyAlertSchema>;
+
 // ─── Exported TypeScript Types ──────────────────────────────────────────────────
 
 export type AnalyticsSummary = z.infer<typeof AnalyticsSummarySchema>;
@@ -175,6 +202,7 @@ export interface AnalyticsData {
   };
   budget: BudgetAnalytics;
   goals: GoalsAnalytics;
+  anomalies: AnomalyAlert[];
 }
 
 // ─── Default / Empty State Values ───────────────────────────────────────────────
@@ -187,13 +215,25 @@ const DEFAULT_SUMMARY: AnalyticsSummary = {
   total_to_goals: 0,
   savings_rate: 0,
   avg_monthly_expense: 0,
+  three_month_burn_rate: 0,
   financial_runway: 0,
+  extended_runway: 0,
 };
 
 const DEFAULT_CASHFLOW: CashflowAnalytics = {
   monthly_trend: [],
   daily_heatmap: [],
   top_expenses: [],
+  temporal_insights: {
+    weekend_ratio: 0,
+    weekday_ratio: 0,
+    weekend_total: 0,
+    weekday_total: 0,
+    payday_effect: {
+      post_payday_avg_daily: 0,
+      normal_avg_daily: 0,
+    },
+  },
 };
 
 const DEFAULT_NETWORTH: NetWorthAnalytics = {
@@ -279,6 +319,15 @@ async function fetchGoalsAnalytics(supabaseClient: any): Promise<GoalsAnalytics>
   } catch (e) { console.error("[analytics] goals parse error:", e); return DEFAULT_GOALS; }
 }
 
+async function fetchAnomalyAlerts(supabaseClient: any, year: number = 2026, month: number = 6): Promise<AnomalyAlert[]> {
+  if (!isConfigured || !supabaseClient) return [];
+  try {
+    const { data, error } = await supabaseClient.rpc("get_anomaly_alerts", { p_year: year, p_month: month });
+    if (error) { console.error("[analytics] anomaly error:", error); return []; }
+    return z.array(AnomalyAlertSchema).parse(data);
+  } catch (e) { console.error("[analytics] anomaly parse error:", e); return []; }
+}
+
 // ─── Enrichment Helpers ─────────────────────────────────────────────────────────
 
 function enrichTopExpenses(expenses: TopExpenseItem[]): TopExpenseWithColor[] {
@@ -329,12 +378,13 @@ export async function fetchAllAnalytics(
   month: number = 6,
   period: string = "month",
 ): Promise<AnalyticsData> {
-  const [summary, cashflow, networth, budget, goals] = await Promise.all([
+  const [summary, cashflow, networth, budget, goals, anomalies] = await Promise.all([
     fetchAnalyticsSummary(supabaseClient),
     fetchCashflowAnalytics(supabaseClient, year, month, period),
     fetchNetWorthAnalytics(supabaseClient),
     fetchBudgetAnalytics(supabaseClient, year, month, period),
     fetchGoalsAnalytics(supabaseClient),
+    fetchAnomalyAlerts(supabaseClient, year, month),
   ]);
 
   return {
@@ -350,6 +400,7 @@ export async function fetchAllAnalytics(
     },
     budget,
     goals,
+    anomalies,
   };
 }
 

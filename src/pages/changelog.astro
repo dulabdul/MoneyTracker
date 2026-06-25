@@ -14,6 +14,24 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.3",
+    date: "25 Juni 2026",
+    added: [
+      "Capsule Filter System to dynamically toggle between 'Top 5' and 'All Categories' views without database limits.",
+      "Anomaly Detection & Leak Alert Engine to automatically flag suspicious spending spikes and subscription price hikes.",
+      "Temporal Insights module to track Weekend vs Weekday spending splits and Payday expenditure velocity."
+    ],
+    improved: [
+      "Executed a comprehensive Light Mode theme adaptation refactoring across all dashboard widgets for premium visual clarity.",
+      "Cleaned up visual hierarchy on the Analytics dashboard by removing the duplicated Financial Runway widget."
+    ],
+    fixed: [
+      "Fixed an issue where the get_cashflow_analytics RPC crashed due to a missing inline logic block for Temporal Insights.",
+      "Resolved a UI layout overflow bug on the TopExpenseDonut chart by transitioning from absolute positioning to dynamic CSS Grid stacking.",
+      "Fixed the Anomaly Engine database setup where default system categories were incorrectly assigned null user IDs during migration."
+    ]
+  },
+  {
     version: "v1.2.2",
     date: "24 Juni 2026",
     added: [

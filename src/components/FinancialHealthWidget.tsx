@@ -45,7 +45,7 @@ export default function FinancialHealthWidget({ data }: Props) {
   const strokeDashoffset = circumference - (data.score / 100) * circumference;
 
   return (
-    <div className={`bg-[#141b2d] rounded-3xl p-6 shadow-xl border border-white/5 relative overflow-hidden transition-all duration-500 hover:${bgGlow}`}>
+    <div className={`bg-white dark:bg-[#141b2d] rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] dark:shadow-xl border border-slate-100 dark:border-white/5 relative overflow-hidden transition-all duration-500 hover:${bgGlow}`}>
       {/* Background soft glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-20 pointer-events-none" style={{ backgroundColor: strokeColor }}></div>
 
@@ -82,10 +82,10 @@ export default function FinancialHealthWidget({ data }: Props) {
             />
           </svg>
           <div className="absolute flex flex-col items-center justify-center text-center">
-            <span className="text-4xl font-black text-white tracking-tighter tabular-nums">
+            <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums">
               {data.score}
             </span>
-            <span className="text-[10px] uppercase font-bold text-white/40 tracking-wider">
+            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 tracking-wider">
               SCORE
             </span>
           </div>
@@ -93,14 +93,14 @@ export default function FinancialHealthWidget({ data }: Props) {
 
         {/* Title and Rank */}
         <div className="flex-1 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 mb-3">
             <Icon className={`w-4 h-4 ${themeColor}`} />
             <span className={`text-xs font-bold uppercase tracking-wider ${themeColor}`}>
               {data.rank_label}
             </span>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Kesehatan Finansial</h2>
-          <p className="text-sm text-white/50 max-w-sm">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Kesehatan Finansial</h2>
+          <p className="text-sm text-slate-500 dark:text-white/50 max-w-sm">
             Skor ini dihitung berdasarkan rasio tabungan, kepatuhan anggaran, dan penggunaan kreditmu.
           </p>
         </div>
@@ -108,23 +108,23 @@ export default function FinancialHealthWidget({ data }: Props) {
 
       {/* Quests Drawer */}
       {data.quests && data.quests.length > 0 && (
-        <div className="mt-8 pt-6 border-t border-white/5">
-          <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-white/30"></span>
             Misi & Insight
           </h3>
           <div className="grid gap-3">
             {data.quests.map((quest, idx) => (
               <div 
                 key={idx}
-                className="flex items-start gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+                className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
               >
                 <div className="shrink-0 mt-0.5">
-                  {quest.status === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-                  {quest.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-                  {quest.status === 'danger' && <XCircle className="w-5 h-5 text-rose-500" />}
+                  {quest.status === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+                  {quest.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />}
+                  {quest.status === 'danger' && <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-500" />}
                 </div>
-                <p className="text-sm text-white/80 leading-snug">
+                <p className="text-sm text-slate-700 dark:text-white/80 leading-snug">
                   {quest.description}
                 </p>
               </div>
