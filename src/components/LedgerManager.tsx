@@ -1099,7 +1099,7 @@ export default function LedgerManager({
       setTransactions((prev) => [row, ...prev]);
       // Sync wallet balance
       const delta = getTransactionDelta(data.amount, data.type);
-      const updatedWallet = await adjustWalletBalance(data.wallet_id, delta);
+      const updatedWallet = await adjustWalletBalance(supabase, data.wallet_id, delta);
       if (updatedWallet) {
         setWallets((prev) => prev.map((w) => w.id === updatedWallet.id ? updatedWallet : w));
         window.dispatchEvent(new CustomEvent("wallet-balance-updated", {
@@ -1204,7 +1204,7 @@ export default function LedgerManager({
         // Same wallet: apply net change
         const netDelta = newDelta - oldDelta;
         if (netDelta !== 0) {
-          const updatedWallet = await adjustWalletBalance(data.wallet_id, netDelta);
+          const updatedWallet = await adjustWalletBalance(supabase, data.wallet_id, netDelta);
           if (updatedWallet) {
             setWallets((prev) => prev.map((w) => w.id === updatedWallet.id ? updatedWallet : w));
             window.dispatchEvent(new CustomEvent("wallet-balance-updated", {
@@ -1215,8 +1215,8 @@ export default function LedgerManager({
       } else {
         // Different wallets: reverse from old wallet, apply to new wallet
         const [updatedOld, updatedNew] = await Promise.all([
-          adjustWalletBalance(editTarget.wallet_id, -oldDelta),
-          adjustWalletBalance(data.wallet_id, newDelta),
+          adjustWalletBalance(supabase, editTarget.wallet_id, -oldDelta),
+          adjustWalletBalance(supabase, data.wallet_id, newDelta),
         ]);
         [updatedOld, updatedNew].forEach((w) => {
           if (w) {
@@ -1261,7 +1261,7 @@ export default function LedgerManager({
       if (error) { setDbError(error.message); return; }
       // Reverse the balance effect of the deleted transaction
       const reverseDelta = -getTransactionDelta(deleteTarget.amount, deleteTarget.type);
-      const updatedWallet = await adjustWalletBalance(deleteTarget.wallet_id, reverseDelta);
+      const updatedWallet = await adjustWalletBalance(supabase, deleteTarget.wallet_id, reverseDelta);
       if (updatedWallet) {
         setWallets((prev) => prev.map((w) => w.id === updatedWallet.id ? updatedWallet : w));
         window.dispatchEvent(new CustomEvent("wallet-balance-updated", {

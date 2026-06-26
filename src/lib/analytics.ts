@@ -3,7 +3,7 @@
  * Calls Supabase RPC functions and validates responses with Zod.
  */
 import { z } from "zod";
-import { supabase, isConfigured } from "./supabase";
+import { isConfigured } from "./supabase";
 
 // ─── Color Palettes ────────────────────────────────────────────────────────────
 const EXPENSE_COLORS = [

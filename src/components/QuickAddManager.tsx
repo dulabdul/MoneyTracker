@@ -128,7 +128,7 @@ export default function QuickAddManager({
       }
       // Sync wallet balance immediately
       const delta = getTransactionDelta(data.amount, data.type);
-      const updatedWallet = await adjustWalletBalance(data.wallet_id, delta);
+      const updatedWallet = await adjustWalletBalance(supabase, data.wallet_id, delta);
       if (updatedWallet) {
         // Update local wallets state to reflect balance change
         setWallets((prev) =>

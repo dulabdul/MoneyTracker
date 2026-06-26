@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { createBrowserClient } from "@supabase/ssr";
 
 // ─── Database Types ────────────────────────────────────────────────────────────
@@ -124,11 +123,14 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
 
 export const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-export const supabase = isConfigured
-  ? (typeof window !== "undefined"
-      ? createBrowserClient(supabaseUrl, supabaseAnonKey)
-      : createClient(supabaseUrl, supabaseAnonKey))
-  : null;
+export function createBrowserScopedClient() {
+  if (!isConfigured || typeof window === "undefined") return null;
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}
+
+// Browser-only global client to avoid breaking client components.
+// On the server, this will be null, enforcing strict request-scoped injection.
+export const supabase = typeof window !== "undefined" ? createBrowserScopedClient() : null;
 
 // ─── Color palette for chart segments ─────────────────────────────────────────
 const SEGMENT_COLORS = [
@@ -336,12 +338,13 @@ export async function fetchDashboardData(supabaseClient: any, params: FilterPara
  * Returns updated wallet or null on failure.
  */
 export async function adjustWalletBalance(
+  supabaseClient: any,
   walletId: string,
   delta: number
 ): Promise<Wallet | null> {
-  if (!isConfigured || !supabase) return null;
+  if (!isConfigured || !supabaseClient) return null;
   // Use RPC for atomic read-modify-write to prevent race conditions
-  const { data: current, error: fetchErr } = await supabase
+  const { data: current, error: fetchErr } = await supabaseClient
     .from("wallets")
     .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .eq("id", walletId)
@@ -349,7 +352,7 @@ export async function adjustWalletBalance(
   if (fetchErr || !current) return null;
 
   const newBalance = (current.balance ?? 0) + delta;
-  const { data: updated, error: updateErr } = await supabase
+  const { data: updated, error: updateErr } = await supabaseClient
     .from("wallets")
     .update({ balance: newBalance })
     .eq("id", walletId)
@@ -363,6 +366,7 @@ export async function adjustWalletBalance(
  * Update wallet record (name and/or balance) in Supabase.
  */
 export async function updateWallet(
+  supabaseClient: any,
   walletId: string,
   data: {
     name?: string;
@@ -375,8 +379,8 @@ export async function updateWallet(
     due_month_offset?: number;
   }
 ): Promise<Wallet | null> {
-  if (!isConfigured || !supabase) return null;
-  const { data: updated, error } = await supabase
+  if (!isConfigured || !supabaseClient) return null;
+  const { data: updated, error } = await supabaseClient
     .from("wallets")
     .update(data)
     .eq("id", walletId)
@@ -389,9 +393,9 @@ export async function updateWallet(
 /**
  * Delete a wallet from Supabase.
  */
-export async function deleteWallet(walletId: string): Promise<boolean> {
-  if (!isConfigured || !supabase) return false;
-  const { error } = await supabase
+export async function deleteWallet(supabaseClient: any, walletId: string): Promise<boolean> {
+  if (!isConfigured || !supabaseClient) return false;
+  const { error } = await supabaseClient
     .from("wallets")
     .delete()
     .eq("id", walletId);

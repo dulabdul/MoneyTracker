@@ -77,7 +77,11 @@ BEGIN
   END IF;
 
   -- Calculate Savings Score
-  IF v_savings_rate >= 30 THEN
+  IF v_income = 0 AND v_expense = 0 THEN
+    -- Cold Start (No data yet)
+    v_savings_score := 20; -- Give a neutral starting score instead of punishing them
+    v_quests := v_quests || jsonb_build_object('id', 'savings_new', 'description', 'Belum ada transaksi bulan ini. Yuk mulai catat pemasukan dan pengeluaran pertamamu!', 'status', 'warning');
+  ELSIF v_savings_rate >= 30 THEN
     v_savings_score := 40;
     v_quests := v_quests || jsonb_build_object('id', 'savings_good', 'description', 'Rasio tabungan sehat! Pertahankan di atas 30%.', 'status', 'success');
   ELSIF v_savings_rate >= 0 THEN
@@ -139,9 +143,9 @@ BEGIN
       v_quests := v_quests || jsonb_build_object('id', 'budget_good', 'description', 'Luar biasa! Tidak ada anggaran yang jebol bulan ini.', 'status', 'success');
     END IF;
   ELSE
-    -- No budgets set, default to 40 but give a quest
-    v_budget_score := 40;
-    v_quests := v_quests || jsonb_build_object('id', 'budget_none', 'description', 'Kamu belum mengatur anggaran (budget) bulan ini. Yuk, buat sekarang agar lebih terkontrol!', 'status', 'warning');
+    -- No budgets set, give a baseline neutral score (20 out of 40)
+    v_budget_score := 20;
+    v_quests := v_quests || jsonb_build_object('id', 'budget_none', 'description', 'Belum ada anggaran (budget) bulan ini. Yuk, buat sekarang agar keuanganmu terkontrol!', 'status', 'warning');
   END IF;
 
   -- ==========================================================

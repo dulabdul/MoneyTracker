@@ -14,6 +14,16 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.4",
+    date: "26 Juni 2026",
+    fixed: [
+      "Fixed critical Cross-Tenant Data Isolation Vulnerability by refactoring the Supabase SSR client to use request-scoped instantiations, preventing session data leak across users.",
+      "Secured database analytics and financial health RPC functions by adding explicit user_id checks mapping to auth.uid() to restrict unauthorized cross-user data access.",
+      "Resolved the gamification 'Cold Start' bug where new accounts with zero data incorrectly received a 70 score, adjusting it to a neutral baseline with welcoming onboarding quests.",
+      "Fixed a TypeScript build issue on the ledger view by resolving model interface mapping for category options."
+    ]
+  },
+  {
     version: "v1.2.3",
     date: "25 Juni 2026",
     added: [

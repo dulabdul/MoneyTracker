@@ -404,7 +404,7 @@ export default function AccountManager({ initialAccounts }: AccountManagerProps)
       }
     ) => {
       if (isConfigured && supabase) {
-        const updated = await updateWallet(id, data);
+        const updated = await updateWallet(supabase, id, data);
         if (!updated) throw new Error("Gagal memperbarui akun di database");
         setAccounts((prev) => prev.map((w) => (w.id === id ? updated : w)));
       } else {
@@ -426,7 +426,7 @@ export default function AccountManager({ initialAccounts }: AccountManagerProps)
     setDeleting(true);
     try {
       if (isConfigured && supabase) {
-        const ok = await deleteWallet(deleteTarget.id);
+        const ok = await deleteWallet(supabase, deleteTarget.id);
         if (!ok) throw new Error("Gagal menghapus akun");
       }
       const name = deleteTarget.name;
