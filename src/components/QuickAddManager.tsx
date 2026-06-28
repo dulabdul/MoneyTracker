@@ -92,12 +92,15 @@ export default function QuickAddManager({
       async function loadOptions() {
         setLoading(true);
         try {
+          const { data: { user } } = await supabase!.auth.getUser();
+          if (!user) return;
           const [wRes, cRes] = await Promise.all([
             supabase!
               .from("wallets")
               .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
+              .eq("user_id", user.id)
               .order("name", { ascending: true }),
-            supabase!.from("categories").select("id, name, type").order("name", { ascending: true }),
+            supabase!.from("categories").select("id, name, type").eq("user_id", user.id).order("name", { ascending: true }),
           ]);
           if (wRes.data) setWallets(wRes.data as Wallet[]);
           if (cRes.data) setCategories(cRes.data);
@@ -113,6 +116,11 @@ export default function QuickAddManager({
 
   async function handleSave(data: TxFormData) {
     if (isConfigured && supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Not authenticated");
+        return;
+      }
       const { error: err } = await supabase
         .from("transactions")
         .insert({
@@ -122,6 +130,7 @@ export default function QuickAddManager({
           wallet_id: data.wallet_id,
           category_id: data.category_id,
           created_at: data.created_at || new Date().toISOString(),
+          user_id: user.id,
         });
       if (err) {
         setError(err.message);

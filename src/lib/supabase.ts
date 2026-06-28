@@ -341,11 +341,15 @@ export async function adjustWalletBalance(
   delta: number
 ): Promise<Wallet | null> {
   if (!isConfigured || !supabaseClient) return null;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return null;
+  
   // Use RPC for atomic read-modify-write to prevent race conditions
   const { data: current, error: fetchErr } = await supabaseClient
     .from("wallets")
     .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .eq("id", walletId)
+    .eq("user_id", user.id)
     .single();
   if (fetchErr || !current) return null;
 
@@ -354,6 +358,7 @@ export async function adjustWalletBalance(
     .from("wallets")
     .update({ balance: newBalance })
     .eq("id", walletId)
+    .eq("user_id", user.id)
     .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .single();
   if (updateErr) return null;
@@ -378,10 +383,14 @@ export async function updateWallet(
   }
 ): Promise<Wallet | null> {
   if (!isConfigured || !supabaseClient) return null;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return null;
+
   const { data: updated, error } = await supabaseClient
     .from("wallets")
     .update(data)
     .eq("id", walletId)
+    .eq("user_id", user.id)
     .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .single();
   if (error) return null;
@@ -393,10 +402,14 @@ export async function updateWallet(
  */
 export async function deleteWallet(supabaseClient: any, walletId: string): Promise<boolean> {
   if (!isConfigured || !supabaseClient) return false;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return false;
+
   const { error } = await supabaseClient
     .from("wallets")
     .delete()
-    .eq("id", walletId);
+    .eq("id", walletId)
+    .eq("user_id", user.id);
   return !error;
 }
 

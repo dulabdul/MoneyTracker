@@ -937,13 +937,18 @@ export default function LedgerManager({
   const reloadData = useCallback(async () => {
     if (isConfigured && supabase) {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         const [txRes, walletRes] = await Promise.all([
           supabase
             .from("transactions")
             .select("*, wallets(name), categories(name)")
+            .eq("user_id", user.id)
             .order("created_at", { ascending: false })
             .limit(500),
-          supabase.from("wallets").select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset"),
+          supabase.from("wallets")
+            .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
+            .eq("user_id", user.id),
         ]);
 
         if (txRes.data) {
@@ -1129,6 +1134,8 @@ export default function LedgerManager({
 
   const handleAddAccount = useCallback(async (data: AccountFormData) => {
     if (isConfigured && supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
       const { data: inserted, error } = await supabase
         .from("wallets")
         .insert({
@@ -1140,6 +1147,7 @@ export default function LedgerManager({
           billing_month_offset: data.billing_month_offset ?? 0,
           due_date: data.due_date ?? null,
           due_month_offset: data.due_month_offset ?? 0,
+          user_id: user.id,
         })
         .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
         .single();

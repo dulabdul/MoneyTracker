@@ -14,6 +14,15 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.6",
+    date: "28 Juni 2026",
+    fixed: [
+      "Resolved a critical cross-tenant data leakage by enforcing explicit user_id filters on all frontend select, update, and insert queries for wallets.",
+      "Hardened backend-scoped database helpers (balance adjustment, update, delete) to strictly bind transactions to the authenticated user's ID.",
+      "Added an automated Playwright network interception E2E test to verify frontend queries carry appropriate user_id filters to prevent future regressions."
+    ]
+  },
+  {
     version: "v1.2.5",
     date: "28 Juni 2026",
     fixed: [

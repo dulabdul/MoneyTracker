@@ -370,9 +370,12 @@ export default function AccountManager({ initialAccounts }: AccountManagerProps)
     async function reloadWallets() {
       if (isConfigured && supabase) {
         try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
           const { data, error } = await supabase
             .from("wallets")
             .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
+            .eq("user_id", user.id)
             .order("name", { ascending: true });
           if (!error && data) {
             setAccounts(data as Wallet[]);

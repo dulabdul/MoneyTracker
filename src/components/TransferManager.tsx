@@ -562,6 +562,9 @@ export default function TransferManager({
   const reloadData = useCallback(async () => {
     if (isConfigured && supabase) {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
         const [transferRes, walletRes, goalRes] = await Promise.all([
           supabase
             .from("transfers")
@@ -581,15 +584,18 @@ export default function TransferManager({
               to_wallet:wallets!to_wallet_id(name),
               to_goal:financial_goals!to_goal_id(name)
             `)
+            .eq("user_id", user.id)
             .order("transaction_date", { ascending: false }),
           supabase
             .from("wallets")
             .select("id, name, balance")
+            .eq("user_id", user.id)
             .order("name", { ascending: true }),
           supabase
             .from("financial_goals")
             .select("*")
             .eq("status", "active")
+            .eq("user_id", user.id)
             .order("name", { ascending: true })
         ]);
 
