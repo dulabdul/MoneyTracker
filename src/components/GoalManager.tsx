@@ -207,6 +207,7 @@ function AddEditGoalDialog({ open, onClose, onSave, editingGoal }: AddEditDialog
               <DatePicker
                 value={targetDate}
                 onChange={setTargetDate}
+                align="top"
               />
             </div>
 

@@ -5,6 +5,7 @@ interface DatePickerProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  align?: "top" | "bottom";
 }
 
 const MONTHS_INDONESIAN = [
@@ -27,6 +28,7 @@ export default function DatePicker({
   onChange,
   placeholder = "Pilih Tanggal",
   className = "",
+  align = "bottom",
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,7 +133,9 @@ export default function DatePicker({
       </button>
 
       {open && (
-        <div className="absolute top-12 left-0 right-0 bg-card border border-border/80 rounded-3xl p-4 shadow-2xl z-50 animate-in fade-in duration-200">
+        <div className={`absolute left-0 right-0 bg-card border border-border/80 rounded-3xl p-4 shadow-2xl z-50 animate-in fade-in duration-200 ${
+          align === "top" ? "bottom-full mb-2" : "top-12"
+        }`}>
           <div className="flex items-center justify-between text-xs font-bold border-b border-border/40 pb-2 mb-2">
             <button
               type="button"

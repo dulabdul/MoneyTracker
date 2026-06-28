@@ -497,6 +497,7 @@ function NewTransferDialog({
                   const oldTime = transactionDate ? transactionDate.slice(11, 24) : new Date().toISOString().slice(11, 24);
                   setTransactionDate(`${val}T${oldTime}`);
                 }}
+                align="top"
               />
             </div>
           </div>
