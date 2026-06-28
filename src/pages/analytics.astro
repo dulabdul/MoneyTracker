@@ -16,7 +16,7 @@ const period = (url.searchParams.get("period") || "month") as "month" | "year" |
 const analyticsData: AnalyticsData = await fetchAllAnalytics(supabase, year, month, period);
 
 // ── Cache: short TTL for fresh data ─────────────────────────────────────────
-Astro.response.headers.set("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

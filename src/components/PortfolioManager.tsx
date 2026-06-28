@@ -27,7 +27,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CurrencyInput from "@/components/ui/CurrencyInput";
-import { supabase, isConfigured } from "@/lib/supabase";
+import { createBrowserScopedClient, isConfigured } from "@/lib/supabase";
+const supabase = createBrowserScopedClient();
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 export type AssetType = "Gold" | "Stocks" | "Crypto" | "Mutual_Funds";

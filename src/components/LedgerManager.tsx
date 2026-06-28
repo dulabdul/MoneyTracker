@@ -35,7 +35,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CurrencyInput from "@/components/ui/CurrencyInput";
-import { supabase, isConfigured, adjustWalletBalance, getTransactionDelta } from "@/lib/supabase";
+import { createBrowserScopedClient, isConfigured, adjustWalletBalance, getTransactionDelta } from "@/lib/supabase";
+const supabase = createBrowserScopedClient();
 import type { TransactionRow, Wallet, Category, TransactionType } from "@/lib/supabase";
 import FilterControls from "./FilterControls";
 import DatePicker from "@/components/ui/DatePicker";

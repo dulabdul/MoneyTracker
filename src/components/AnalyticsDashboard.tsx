@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../lib/supabase";
+import { createBrowserScopedClient } from "../lib/supabase";
+const supabase = createBrowserScopedClient();
 import type {
   AnalyticsData,
   PortfolioTypeWithColor,

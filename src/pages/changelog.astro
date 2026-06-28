@@ -14,6 +14,14 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.5",
+    date: "28 Juni 2026",
+    fixed: [
+      "Resolved a critical multi-tenant RLS constraint collision on the budgets table by refactoring the unique constraint to include user_id.",
+      "Fixed an SSR edge caching bug on the /analytics and /portfolio routes that caused cross-tenant data bleeding by standardizing on strict no-cache/no-store Cache-Control headers."
+    ]
+  },
+  {
     version: "v1.2.4",
     date: "26 Juni 2026",
     fixed: [

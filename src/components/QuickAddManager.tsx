@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { TxFormDialog } from "./LedgerManager";
-import { supabase, isConfigured, adjustWalletBalance, getTransactionDelta } from "../lib/supabase";
+import { createBrowserScopedClient, isConfigured, adjustWalletBalance, getTransactionDelta } from "../lib/supabase";
+const supabase = createBrowserScopedClient();
 import type { Wallet, Category, TransactionType } from "../lib/supabase";
 import type { TxFormData } from "./LedgerManager";
 import {

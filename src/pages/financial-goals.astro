@@ -32,7 +32,7 @@ if (isConfigured && supabase) {
   }
 }
 
-Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

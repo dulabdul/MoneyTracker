@@ -27,7 +27,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CurrencyInput from "@/components/ui/CurrencyInput";
-import { supabase, isConfigured } from "@/lib/supabase";
+import { createBrowserScopedClient, isConfigured } from "@/lib/supabase";
+const supabase = createBrowserScopedClient();
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface BudgetRow {
@@ -380,14 +381,18 @@ export default function BudgetManager({
         let insertedId = "b_" + Math.random().toString(36).substring(2, 9);
 
         if (isConfigured && supabase) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error("Authentication required");
+
           const { data, error } = await supabase
             .from("budgets")
             .upsert({
+              user_id: user.id,
               category_id: formData.category_id,
               limit_amount: formData.limit_amount,
               month: activeMonth,
               year: activeYear,
-            }, { onConflict: 'category_id, month, year' })
+            }, { onConflict: 'user_id, category_id, month, year' })
             .select()
             .single();
 

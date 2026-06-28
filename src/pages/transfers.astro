@@ -73,7 +73,7 @@ if (isConfigured && supabase) {
 }
 
 // transfers data is updated live - disable cache
-Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

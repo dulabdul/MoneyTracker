@@ -26,7 +26,7 @@ if (isConfigured && supabase) {
 }
 
 // ── Cache: short TTL so prices feel fresh ─────────────────────────────────────
-Astro.response.headers.set("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

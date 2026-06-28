@@ -35,7 +35,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { supabase, isConfigured } from "@/lib/supabase";
+import { createBrowserScopedClient, isConfigured } from "@/lib/supabase";
+const supabase = createBrowserScopedClient();
 import DatePicker from "@/components/ui/DatePicker";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────

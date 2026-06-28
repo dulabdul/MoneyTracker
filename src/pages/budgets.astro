@@ -57,7 +57,7 @@ const budgets: BudgetRow[] = budgetsRaw.map((b) => {
   };
 });
 
-Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

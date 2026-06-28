@@ -128,9 +128,7 @@ export function createBrowserScopedClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
 
-// Browser-only global client to avoid breaking client components.
-// On the server, this will be null, enforcing strict request-scoped injection.
-export const supabase = typeof window !== "undefined" ? createBrowserScopedClient() : null;
+// Developers must now call createBrowserScopedClient() locally inside components.
 
 // ─── Color palette for chart segments ─────────────────────────────────────────
 const SEGMENT_COLORS = [

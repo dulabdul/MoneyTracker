@@ -84,7 +84,7 @@ const totalCreditOutstanding = allWallets
   .reduce((sum, w) => sum + Math.max(0, -(w.balance ?? 0)), 0);
 
 // ── Cache headers ──────────────────────────────────────────────────────────────
-Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

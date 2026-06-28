@@ -45,7 +45,7 @@ if (isConfigured && supabase) {
 const openNew = Astro.url.searchParams.get("action") === "new";
 
 // Ledger data is always fresh — no cache (CRUD page)
-Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 ---
 
 <Layout

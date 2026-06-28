@@ -21,12 +21,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import CurrencyInput from "@/components/ui/CurrencyInput";
 import {
-  supabase,
+  createBrowserScopedClient,
   isConfigured,
   updateWallet,
   deleteWallet,
   isCreditAccount,
 } from "@/lib/supabase";
+const supabase = createBrowserScopedClient();
 import type { Wallet } from "@/lib/supabase";
 import { getAccountLogo } from "@/lib/logoUtils";
 import CreditAccountCard from "@/components/CreditAccountCard";

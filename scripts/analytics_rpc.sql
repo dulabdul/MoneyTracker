@@ -491,7 +491,7 @@ BEGIN
           AND created_at <= v_month_end
         GROUP BY category_id
       ) tx_agg ON tx_agg.category_id = b.category_id
-      WHERE b.month = p_month AND b.year = p_year AND b.user_id = auth.uid()
+      WHERE b.month = p_month AND b.year = p_year AND b.user_id = auth.uid() AND b.user_id = auth.uid()
     ) sub;
   END IF;
 
