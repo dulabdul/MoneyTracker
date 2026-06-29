@@ -17,6 +17,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 async function run() {
   console.log("🔄 Starting self-healing restore and test seeding script...\n");
 
+  const isProd = process.env.PUBLIC_SUPABASE_URL?.includes('supabase.co');
+  if (isProd && !process.argv.includes('--danger-allow-production')) {
+    console.error("❌ SAFETY LOCK: This script is destructive and cannot be run against production!");
+    console.error("❌ If you absolutely must run this, pass the '--danger-allow-production' flag.");
+    process.exit(1);
+  }
+
   // 1. Dapatkan user_id aktif dari transaksi ril user
   const { data: userTxs, error: txError } = await supabase
     .from("transactions")

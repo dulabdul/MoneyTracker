@@ -7,7 +7,9 @@
 -- 1. get_analytics_summary()
 --    Top Summary Cards: Net Worth, Savings Rate, Financial Runway
 -- ────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION public.get_analytics_summary()
+CREATE OR REPLACE FUNCTION public.get_analytics_summary(
+  p_user_id uuid
+)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -27,12 +29,12 @@ BEGIN
   -- Total liquid cash (sum of all wallet balances)
   SELECT COALESCE(SUM(balance), 0) INTO v_total_liquid
   FROM public.wallets
-  WHERE user_id = auth.uid();
+  WHERE user_id = p_user_id;
 
   -- Total portfolio value (sum of current_value from assets_portfolio)
   SELECT COALESCE(SUM(current_value), 0) INTO v_total_portfolio
   FROM public.assets_portfolio
-  WHERE user_id = auth.uid();
+  WHERE user_id = p_user_id;
 
   -- Net Worth = Liquid + Portfolio
   v_total_net_worth := v_total_liquid + v_total_portfolio;
@@ -40,12 +42,12 @@ BEGIN
   -- Total income (all INCOME transactions ever)
   SELECT COALESCE(SUM(amount), 0) INTO v_total_income
   FROM public.transactions
-  WHERE type = 'INCOME' AND user_id = auth.uid();
+  WHERE type = 'INCOME' AND user_id = p_user_id;
 
   -- Total funds transferred TO goals (via transfers with to_goal_id)
   SELECT COALESCE(SUM(amount), 0) INTO v_total_to_goals
   FROM public.transfers
-  WHERE to_goal_id IS NOT NULL AND user_id = auth.uid();
+  WHERE to_goal_id IS NOT NULL AND user_id = p_user_id;
 
   -- Savings Rate = (Total to Goals / Total Income) × 100
   IF v_total_income > 0 THEN
@@ -60,7 +62,7 @@ BEGIN
       SUM(amount) AS monthly_total,
       DENSE_RANK() OVER (ORDER BY DATE_TRUNC('month', created_at) DESC) as rnk
     FROM public.transactions
-    WHERE type = 'EXPENSE' AND user_id = auth.uid()
+    WHERE type = 'EXPENSE' AND user_id = p_user_id
     GROUP BY DATE_TRUNC('month', created_at)
   ) sub
   WHERE rnk <= 3;
@@ -95,6 +97,8 @@ $$;
 -- ────────────────────────────────────────────────────────────
 DROP FUNCTION IF EXISTS public.get_cashflow_analytics(int, int);
 CREATE OR REPLACE FUNCTION public.get_cashflow_analytics(
+  p_user_id uuid,
+
   p_year int DEFAULT 2026,
   p_month int DEFAULT NULL,
   p_period text DEFAULT 'month'
@@ -142,7 +146,7 @@ BEGIN
       LEFT JOIN public.transactions t ON 
         t.created_at >= w.week AND 
         t.created_at < (w.week + INTERVAL '1 week') AND
-        t.user_id = auth.uid()
+        t.user_id = p_user_id
       GROUP BY w.week
       ORDER BY w.week
     ) sub;
@@ -164,7 +168,7 @@ BEGIN
         v_end_time::date,
         '1 day'::interval
       ) d(day)
-      LEFT JOIN public.transactions t ON t.created_at::date = d.day AND t.user_id = auth.uid()
+      LEFT JOIN public.transactions t ON t.created_at::date = d.day AND t.user_id = p_user_id
       GROUP BY d.day
       ORDER BY d.day
     ) sub;
@@ -186,7 +190,7 @@ BEGIN
       LEFT JOIN public.transactions t ON 
         t.created_at >= m.month AND 
         t.created_at < (m.month + INTERVAL '1 month') AND
-        t.user_id = auth.uid()
+        t.user_id = p_user_id
       GROUP BY m.month
       ORDER BY m.month
     ) sub;
@@ -201,7 +205,7 @@ BEGIN
       SUM(amount) AS amount,
       COUNT(*)::int AS count
     FROM public.transactions
-    WHERE type = 'EXPENSE' AND user_id = auth.uid()
+    WHERE type = 'EXPENSE' AND user_id = p_user_id
       AND created_at >= v_year_start AND created_at <= v_year_end
     GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
     ORDER BY date
@@ -221,7 +225,7 @@ BEGIN
         COUNT(t.id)::int AS count
       FROM public.transactions t
       JOIN public.categories c ON t.category_id = c.id
-      WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid()
+      WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
         AND t.created_at >= v_start_time AND t.created_at <= v_end_time
       GROUP BY c.name
       ORDER BY amount DESC
@@ -236,7 +240,7 @@ BEGIN
         COUNT(t.id)::int AS count
       FROM public.transactions t
       JOIN public.categories c ON t.category_id = c.id
-      WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid()
+      WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
         AND t.created_at >= v_year_start AND t.created_at <= v_year_end
       GROUP BY c.name
       ORDER BY amount DESC
@@ -254,7 +258,7 @@ BEGIN
       COALESCE(SUM(amount) FILTER (WHERE EXTRACT(ISODOW FROM created_at) IN (1, 2, 3, 4, 5)), 0)
     INTO v_weekend_total, v_weekday_total
     FROM public.transactions
-    WHERE type = 'EXPENSE' AND user_id = auth.uid()
+    WHERE type = 'EXPENSE' AND user_id = p_user_id
       AND created_at >= v_target_start AND created_at <= v_target_end;
 
     IF (v_weekend_total + v_weekday_total) > 0 THEN
@@ -269,7 +273,7 @@ BEGIN
     WITH payday_dates AS (
       SELECT DISTINCT created_at::date AS p_date
       FROM public.transactions
-      WHERE type = 'INCOME' AND user_id = auth.uid()
+      WHERE type = 'INCOME' AND user_id = p_user_id
         AND created_at >= v_target_start AND created_at <= v_target_end
         AND (EXTRACT(DAY FROM created_at) BETWEEN 25 AND 31 OR EXTRACT(DAY FROM created_at) BETWEEN 1 AND 5)
     ),
@@ -278,7 +282,7 @@ BEGIN
         created_at::date AS e_date,
         SUM(amount) AS daily_amount
       FROM public.transactions
-      WHERE type = 'EXPENSE' AND user_id = auth.uid()
+      WHERE type = 'EXPENSE' AND user_id = p_user_id
         AND created_at >= v_target_start AND created_at <= v_target_end
       GROUP BY created_at::date
     ),
@@ -320,7 +324,9 @@ $$;
 -- 3. get_networth_analytics()
 --    Tab 2: Portfolio breakdown by asset type + liquid vs invested
 -- ────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION public.get_networth_analytics()
+CREATE OR REPLACE FUNCTION public.get_networth_analytics(
+  p_user_id uuid
+)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -334,7 +340,7 @@ DECLARE
 BEGIN
   -- Total liquid
   SELECT COALESCE(SUM(balance), 0) INTO v_total_liquid
-  FROM public.wallets WHERE user_id = auth.uid();
+  FROM public.wallets WHERE user_id = p_user_id;
 
   -- Portfolio breakdown by asset type
   SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb)
@@ -350,14 +356,14 @@ BEGIN
           ELSE total_units * average_buy_price
         END
       ) AS cost_basis
-    FROM public.assets_portfolio WHERE user_id = auth.uid()
+    FROM public.assets_portfolio WHERE user_id = p_user_id
     GROUP BY asset_type
     ORDER BY value DESC
   ) sub;
 
   -- Total portfolio value
   SELECT COALESCE(SUM(current_value), 0) INTO v_total_portfolio
-  FROM public.assets_portfolio WHERE user_id = auth.uid();
+  FROM public.assets_portfolio WHERE user_id = p_user_id;
 
   -- Total invested (cost basis)
   SELECT COALESCE(SUM(
@@ -366,13 +372,13 @@ BEGIN
       ELSE total_units * average_buy_price
     END
   ), 0) INTO v_total_invested
-  FROM public.assets_portfolio WHERE user_id = auth.uid();
+  FROM public.assets_portfolio WHERE user_id = p_user_id;
 
   -- Wallet breakdown
   SELECT COALESCE(jsonb_agg(row_to_json(sub) ORDER BY sub.balance DESC), '[]'::jsonb)
   INTO v_wallets
   FROM (
-    SELECT name, balance FROM public.wallets WHERE user_id = auth.uid() ORDER BY balance DESC
+    SELECT name, balance FROM public.wallets WHERE user_id = p_user_id ORDER BY balance DESC
   ) sub;
 
   RETURN jsonb_build_object(
@@ -394,6 +400,8 @@ $$;
 -- ────────────────────────────────────────────────────────────
 DROP FUNCTION IF EXISTS public.get_budget_analytics(int, int);
 CREATE OR REPLACE FUNCTION public.get_budget_analytics(
+  p_user_id uuid,
+
   p_year int DEFAULT 2026,
   p_month int DEFAULT 6,
   p_period text DEFAULT 'month'
@@ -446,7 +454,7 @@ BEGIN
       LEFT JOIN (
         SELECT month, year, SUM(limit_amount) AS total_budget
         FROM public.budgets
-        WHERE year = p_year AND user_id = auth.uid()
+        WHERE year = p_year AND user_id = p_user_id
         GROUP BY month, year
       ) b_agg ON b_agg.month = EXTRACT(MONTH FROM m.month)::int
       -- Aggregate transactions for each month
@@ -455,7 +463,7 @@ BEGIN
           EXTRACT(MONTH FROM created_at)::int AS month_num,
           SUM(amount) AS total_spent
         FROM public.transactions
-        WHERE type = 'EXPENSE' AND user_id = auth.uid()
+        WHERE type = 'EXPENSE' AND user_id = p_user_id
           AND created_at >= v_year_start AND created_at <= v_year_end
         GROUP BY EXTRACT(MONTH FROM created_at)
       ) tx_agg ON tx_agg.month_num = EXTRACT(MONTH FROM m.month)::int
@@ -486,12 +494,12 @@ BEGIN
       LEFT JOIN (
         SELECT category_id, SUM(amount) AS total_spent
         FROM public.transactions
-        WHERE type = 'EXPENSE' AND user_id = auth.uid()
+        WHERE type = 'EXPENSE' AND user_id = p_user_id
           AND created_at >= v_month_start
           AND created_at <= v_month_end
         GROUP BY category_id
       ) tx_agg ON tx_agg.category_id = b.category_id
-      WHERE b.month = p_month AND b.year = p_year AND b.user_id = auth.uid() AND b.user_id = auth.uid()
+      WHERE b.month = p_month AND b.year = p_year AND b.user_id = p_user_id AND b.user_id = p_user_id
     ) sub;
   END IF;
 
@@ -516,7 +524,9 @@ $$;
 -- 5. get_goals_analytics()
 --    Tab 4: Goal velocity, fund flow, projected completion dates
 -- ────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION public.get_goals_analytics()
+CREATE OR REPLACE FUNCTION public.get_goals_analytics(
+  p_user_id uuid
+)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -567,7 +577,7 @@ BEGIN
         ELSE NULL -- Not enough data to project
       END AS projected_date
     FROM public.financial_goals g
-    WHERE g.status = 'active' AND g.user_id = auth.uid()
+    WHERE g.status = 'active' AND g.user_id = p_user_id
     ORDER BY g.target_date ASC
   ) sub;
 
@@ -583,21 +593,21 @@ BEGIN
     FROM public.transfers t
     LEFT JOIN public.wallets w ON t.from_wallet_id = w.id
     LEFT JOIN public.financial_goals g ON t.to_goal_id = g.id
-    WHERE t.to_goal_id IS NOT NULL AND t.user_id = auth.uid()
+    WHERE t.to_goal_id IS NOT NULL AND t.user_id = p_user_id
     GROUP BY w.name, g.name
     ORDER BY amount DESC
   ) sub;
 
   -- Totals
   SELECT COALESCE(SUM(amount), 0) INTO v_total_fund_flow
-  FROM public.transfers WHERE to_goal_id IS NOT NULL AND user_id = auth.uid();
+  FROM public.transfers WHERE to_goal_id IS NOT NULL AND user_id = p_user_id;
 
   SELECT
     COALESCE(SUM(target_amount), 0),
     COALESCE(SUM(current_amount), 0)
   INTO v_total_target, v_total_saved
   FROM public.financial_goals
-  WHERE status = 'active' AND user_id = auth.uid();
+  WHERE status = 'active' AND user_id = p_user_id;
 
   RETURN jsonb_build_object(
     'goals', v_goals,
@@ -619,6 +629,8 @@ $$;
 --    Aggregated Dashboard Stats: Consolidates 6+ REST API queries into 1 RPC
 -- ────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.get_dashboard_stats(
+  p_user_id uuid,
+
   p_start_time timestamptz,
   p_end_time timestamptz,
   p_week_start timestamptz,
@@ -649,7 +661,7 @@ BEGIN
   -- 1. Total Balance (liquid wallets only: cash, bank, ewallet)
   SELECT COALESCE(SUM(balance), 0) INTO v_total_balance
   FROM public.wallets
-  WHERE user_id = auth.uid() AND account_type NOT IN ('paylater', 'credit_card');
+  WHERE user_id = p_user_id AND account_type NOT IN ('paylater', 'credit_card');
 
   -- 2. Wallets List (all wallets including credit accounts, with new metadata)
   SELECT COALESCE(jsonb_agg(row_to_json(w)), '[]'::jsonb) INTO v_wallets
@@ -657,7 +669,7 @@ BEGIN
     SELECT id, name, balance, account_type, credit_limit,
            billing_date, billing_month_offset,
            due_date, due_month_offset
-    FROM public.wallets WHERE user_id = auth.uid() ORDER BY name ASC
+    FROM public.wallets WHERE user_id = p_user_id ORDER BY name ASC
   ) w;
 
   -- 3. Recent Transactions
@@ -676,7 +688,7 @@ BEGIN
     FROM public.transactions t
     LEFT JOIN public.wallets w ON t.wallet_id = w.id
     LEFT JOIN public.categories c ON t.category_id = c.id
-    WHERE t.user_id = auth.uid()
+    WHERE t.user_id = p_user_id
     ORDER BY t.created_at DESC
     LIMIT 5
   ) r;
@@ -687,7 +699,7 @@ BEGIN
     COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0)
   INTO v_monthly_income, v_monthly_expense
   FROM public.transactions
-  WHERE user_id = auth.uid() AND created_at >= p_start_time AND created_at <= p_end_time;
+  WHERE user_id = p_user_id AND created_at >= p_start_time AND created_at <= p_end_time;
 
   -- 5. Income by category
   SELECT COALESCE(jsonb_agg(row_to_json(sub)), '[]'::jsonb) INTO v_income_by_category
@@ -695,7 +707,7 @@ BEGIN
     SELECT c.name AS category, SUM(t.amount) AS amount
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
-    WHERE t.type = 'INCOME' AND t.user_id = auth.uid() AND t.created_at >= p_start_time AND t.created_at <= p_end_time
+    WHERE t.type = 'INCOME' AND t.user_id = p_user_id AND t.created_at >= p_start_time AND t.created_at <= p_end_time
     GROUP BY c.name
     ORDER BY amount DESC
     LIMIT 6
@@ -707,7 +719,7 @@ BEGIN
     SELECT c.name AS category, SUM(t.amount) AS amount
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
-    WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid() AND t.created_at >= p_start_time AND t.created_at <= p_end_time
+    WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id AND t.created_at >= p_start_time AND t.created_at <= p_end_time
     GROUP BY c.name
     ORDER BY amount DESC
     LIMIT 6
@@ -726,7 +738,7 @@ BEGIN
       '1 month'::interval
     ) m(month)
     LEFT JOIN public.transactions t ON
-      t.type = 'INCOME' AND t.user_id = auth.uid() AND
+      t.type = 'INCOME' AND t.user_id = p_user_id AND
       t.created_at >= m.month AND
       t.created_at < (m.month + INTERVAL '1 month')
     GROUP BY m.month
@@ -746,7 +758,7 @@ BEGIN
       '1 day'::interval
     ) d(day)
     LEFT JOIN public.transactions t ON
-      t.type = 'EXPENSE' AND t.user_id = auth.uid() AND
+      t.type = 'EXPENSE' AND t.user_id = p_user_id AND
       t.created_at::date = d.day
     GROUP BY d.day
     ORDER BY d.day
@@ -765,7 +777,7 @@ BEGIN
       '1 day'::interval
     ) d(day)
     LEFT JOIN public.transactions t ON
-      t.type = 'EXPENSE' AND t.user_id = auth.uid() AND
+      t.type = 'EXPENSE' AND t.user_id = p_user_id AND
       t.created_at::date = d.day
     GROUP BY d.day
     ORDER BY d.day
@@ -777,7 +789,7 @@ BEGIN
     COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0)
   INTO v_ytd_income, v_ytd_expense
   FROM public.transactions
-  WHERE user_id = auth.uid() AND created_at >= p_year_start AND created_at <= p_year_end;
+  WHERE user_id = p_user_id AND created_at >= p_year_start AND created_at <= p_year_end;
 
   RETURN jsonb_build_object(
     'total_balance', v_total_balance,
@@ -802,6 +814,8 @@ $$;
 -- ────────────────────────────────────────────────────────────
 DROP FUNCTION IF EXISTS public.get_anomaly_alerts(int, int);
 CREATE OR REPLACE FUNCTION public.get_anomaly_alerts(
+  p_user_id uuid,
+
   p_year int DEFAULT 2026,
   p_month int DEFAULT 6
 )
@@ -831,7 +845,7 @@ BEGIN
     SELECT c.name AS category, SUM(t.amount) AS total
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
-    WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid()
+    WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
       AND t.created_at >= v_target_start AND t.created_at <= v_target_end
     GROUP BY c.name
   ),
@@ -839,7 +853,7 @@ BEGIN
     SELECT c.name AS category, SUM(t.amount) AS total
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
-    WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid()
+    WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
       AND t.created_at >= v_prev_start AND t.created_at <= v_prev_end
     GROUP BY c.name
   )
@@ -865,7 +879,7 @@ BEGIN
     SELECT c.name AS category, (SUM(t.amount) / 90) AS daily_avg
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
-    WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid()
+    WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
       AND t.created_at >= v_3m_start AND t.created_at < v_target_start
     GROUP BY c.name
     HAVING (SUM(t.amount) / 90) > 0
@@ -874,7 +888,7 @@ BEGIN
     SELECT c.name AS category, t.created_at::date AS spike_date, SUM(t.amount) AS daily_total
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
-    WHERE t.type = 'EXPENSE' AND t.user_id = auth.uid()
+    WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
       AND t.created_at >= v_target_start AND t.created_at <= v_target_end
     GROUP BY c.name, t.created_at::date
   ),

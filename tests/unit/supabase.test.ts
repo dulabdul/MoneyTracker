@@ -4,7 +4,7 @@ import {
   getCreditUsed, 
   getCreditAvailable, 
   getCreditUsagePercent,
-  Wallet
+  type Wallet
 } from '../../src/lib/supabase';
 
 describe('Supabase Utilities', () => {

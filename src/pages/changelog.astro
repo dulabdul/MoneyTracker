@@ -14,6 +14,19 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.7",
+    date: "29 Juni 2026",
+    added: [
+      "Automated database extraction pipeline (scripts/backup.ts) and GitHub actions workflow (daily-backup.yml) to back up wallets, categories, transactions, goals, transfers, budgets, and portfolios to a dedicated Git branch."
+    ],
+    fixed: [
+      "Refactored Supabase RPC queries (get_dashboard_stats, get_cashflow_analytics, etc.) to use explicit p_user_id parameters to fix transaction/analytics disappearance issues during SSR.",
+      "Resolved cross-tenant data leaks and state inconsistencies on SSR pages (ledger, portfolio, transfers, budgets, goals) by binding all reads to request-scoped user IDs.",
+      "Patched client-side state mutation queries (update/delete) in LedgerManager and PortfolioManager to enforce user_id constraints.",
+      "Fixed 60+ TypeScript compilation errors including Playwright imports, global window types on AreaChart/DonutChart, and unused variables."
+    ]
+  },
+  {
     version: "v1.2.6",
     date: "28 Juni 2026",
     fixed: [

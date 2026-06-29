@@ -68,6 +68,6 @@ describe('Middleware Security & Isolation', () => {
     const response = await onRequest(context, next);
 
     expect(context.redirect).toHaveBeenCalledWith('/login');
-    expect(response.status).toBe(302);
+    expect((response as Response).status).toBe(302);
   });
 });

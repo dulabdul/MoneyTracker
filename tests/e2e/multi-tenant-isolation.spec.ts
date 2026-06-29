@@ -1,4 +1,4 @@
-import { test, expect, BrowserContext } from '@playwright/test';
+import { test, expect, type BrowserContext } from '@playwright/test';
 
 test.describe('Multi-Tenant Isolation', () => {
   let contextA: BrowserContext;

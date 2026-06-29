@@ -4,7 +4,10 @@ import PortfolioManager from "../components/PortfolioManager";
 import { isConfigured } from "../lib/supabase";
 import type { AssetRow } from "../components/PortfolioManager";
 
-const { supabase } = Astro.locals;
+const { supabase, user } = Astro.locals;
+if (!user) {
+  return Astro.redirect('/login');
+}
 
 // ── SSR: Fetch live assets from Supabase ──────────────────────────────────────
 let assets: AssetRow[] = [];
@@ -14,6 +17,7 @@ if (isConfigured && supabase) {
     const { data, error } = await supabase
       .from("assets_portfolio")
       .select("id, asset_name, asset_type, total_units, average_buy_price, current_value, updated_at")
+      .eq("user_id", user.id)
       .order("asset_type", { ascending: true })
       .order("current_value", { ascending: false });
 

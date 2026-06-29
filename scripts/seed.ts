@@ -95,6 +95,13 @@ const transactions = [
 async function seed() {
   console.log("🌱 Starting FinGram seed...\n");
 
+  const isProd = process.env.PUBLIC_SUPABASE_URL?.includes('supabase.co');
+  if (isProd && !process.argv.includes('--danger-allow-production')) {
+    console.error("❌ SAFETY LOCK: This script is destructive and cannot be run against production!");
+    console.error("❌ If you absolutely must run this, pass the '--danger-allow-production' flag.");
+    process.exit(1);
+  }
+
   // 1. Upsert wallets
   console.log("📦 Upserting wallets...");
   const { error: walletErr } = await supabase.from("wallets").upsert(wallets, { onConflict: "id" });

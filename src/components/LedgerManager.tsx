@@ -1204,7 +1204,9 @@ export default function LedgerManager({
   const handleEdit = useCallback(async (data: TxFormData) => {
     if (!editTarget) return;
     if (isConfigured && supabase) {
-      const { error } = await supabase.from("transactions").update(data).eq("id", editTarget.id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { error } = await supabase.from("transactions").update(data).eq("id", editTarget.id).eq("user_id", user.id);
       if (error) { setDbError(error.message); return; }
       // Reverse old delta, apply new delta
       const oldDelta = getTransactionDelta(editTarget.amount, editTarget.type);
@@ -1266,7 +1268,9 @@ export default function LedgerManager({
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
     if (isConfigured && supabase) {
-      const { error } = await supabase.from("transactions").delete().eq("id", deleteTarget.id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { error } = await supabase.from("transactions").delete().eq("id", deleteTarget.id).eq("user_id", user.id);
       if (error) { setDbError(error.message); return; }
       // Reverse the balance effect of the deleted transaction
       const reverseDelta = -getTransactionDelta(deleteTarget.amount, deleteTarget.type);

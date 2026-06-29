@@ -116,6 +116,14 @@ const chartId = `donut-${Math.random().toString(36).slice(2, 8)}`;
 </div>
 
 <script>
+  declare global {
+    interface Window {
+      initDonutCharts: () => void;
+      donutChartsInitialized: boolean;
+      areaChartsInitialized: boolean;
+    }
+  }
+
   function initDonutCharts() {
     document.querySelectorAll('.donut-chart-card').forEach((card) => {
       const segments = card.querySelectorAll('.donut-segment');

@@ -1,0 +1,909 @@
+{
+  "timestamp": "2026-06-28T10:08:40.680Z",
+  "tables": {
+    "wallets": [
+      {
+        "id": "c95f092c-0ecd-4817-8435-3a86bc2e015f",
+        "name": "BNI",
+        "balance": 2000000,
+        "created_at": "2026-06-28T07:14:40.501356+00:00",
+        "account_type": "bank",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "4ca67636-f951-469f-b1e3-1280404f0bfa"
+      },
+      {
+        "id": "cd816e12-f876-431b-91ef-fbbc590a69bd",
+        "name": "SpayLater",
+        "balance": -2984320,
+        "created_at": "2026-06-18T19:07:14.350781+00:00",
+        "account_type": "paylater",
+        "credit_limit": 4700000,
+        "billing_date": 30,
+        "due_date": 11,
+        "billing_month_offset": 0,
+        "due_month_offset": 1,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "eca22e16-7d5a-4847-ba1f-f8bd03eae6a7",
+        "name": "Cash",
+        "balance": 960000,
+        "created_at": "2026-06-28T07:23:16.213296+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "4ca67636-f951-469f-b1e3-1280404f0bfa"
+      },
+      {
+        "id": "6bf33d85-4a21-47b2-8d58-6b48caf663bf",
+        "name": "Gopay",
+        "balance": 62000,
+        "created_at": "2026-06-12T21:32:05.776162+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "8ecdf2bb-1499-4daa-a3ed-97ac936b7c72",
+        "name": "BCA",
+        "balance": 3129400,
+        "created_at": "2026-06-12T21:30:38.140469+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "25ceef9f-3cdc-40c1-9ced-d62e08b59269",
+        "name": "Jago | Foya-Foya",
+        "balance": 2000,
+        "created_at": "2026-06-12T21:33:56.09831+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "37ba9855-55d4-43c7-990b-0502d3f643c8",
+        "name": "Cash",
+        "balance": 32000,
+        "created_at": "2026-06-12T21:34:29.145939+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "95fe1e44-f85a-4dfe-a438-967d5a7832f7",
+        "name": "ShopeePay",
+        "balance": 227000,
+        "created_at": "2026-06-12T21:31:43.93894+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "name": "BCA Utama",
+        "balance": 12850000,
+        "created_at": "2026-06-28T09:38:13.889625+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "name": "GoPay",
+        "balance": 1240000,
+        "created_at": "2026-06-28T09:38:13.889625+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "name": "Mandiri",
+        "balance": 22500000,
+        "created_at": "2026-06-28T09:38:13.889625+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "a789ae25-799c-4d88-acb8-212b25f6b233",
+        "name": "Mandiri",
+        "balance": 75000,
+        "created_at": "2026-06-12T21:31:14.351703+00:00",
+        "account_type": "cash",
+        "credit_limit": 0,
+        "billing_date": null,
+        "due_date": null,
+        "billing_month_offset": 0,
+        "due_month_offset": 0,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      }
+    ],
+    "categories": [
+      {
+        "id": "246b3a94-35c7-4150-ac46-7872b3115d7d",
+        "name": "College",
+        "type": "EXPENSE",
+        "created_at": "2026-06-24T07:44:00.662287+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4e73f074-277f-4d03-832c-b2db126f2b85",
+        "name": "Entertaiment",
+        "type": "EXPENSE",
+        "created_at": "2026-06-12T20:37:44.7093+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "218a315a-09cb-491d-a384-947a8dc41ded",
+        "name": "Coffee",
+        "type": "EXPENSE",
+        "created_at": "2026-06-13T14:32:12.468439+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4d551e62-a111-4416-abdc-da2a12022217",
+        "name": "Sports",
+        "type": "EXPENSE",
+        "created_at": "2026-06-15T06:19:32.329409+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "3bc3e1fe-0766-4926-9a05-241c5e551918",
+        "name": "Snack",
+        "type": "EXPENSE",
+        "created_at": "2026-06-15T06:20:08.323698+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "14bfe74e-edbf-4ee9-a26b-92717b73a297",
+        "name": "Tukar Cash",
+        "type": "INCOME",
+        "created_at": "2026-06-16T15:19:56.165868+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "349dc4a3-c1fb-4881-a484-451926637993",
+        "name": "SplitBill",
+        "type": "EXPENSE",
+        "created_at": "2026-06-16T15:20:43.174603+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "6e7db1f0-4e1a-48a5-b1e7-a6c38d752c93",
+        "name": "Toiletris",
+        "type": "EXPENSE",
+        "created_at": "2026-06-17T14:13:20.720055+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "754182e8-950c-43c6-a243-52ed8459eac3",
+        "name": "Freelancer",
+        "type": "EXPENSE",
+        "created_at": "2026-06-17T16:41:33.459335+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "92e6ec51-ea9d-4d8d-955c-de9dab587e60",
+        "name": "Skincare",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T15:38:04.806074+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4ea4c199-9edf-4a1a-bdb6-e61fb619d383",
+        "name": "Internet",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:25:30.128509+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "5f54e42e-0888-4166-a5d4-930e751b1bf4",
+        "name": "Drug",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:25:55.81858+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "c42c6a9a-6863-4738-b6c2-3c8e0e7270f3",
+        "name": "Rumah",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:26:16.625737+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "6befcdee-ac02-4d74-8bf5-7f4b1a672959",
+        "name": "Tak Terduga",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:27:15.347963+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "95d95ae1-b86a-49a1-b4bb-db424ef9f046",
+        "name": "Gift",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:28:00.553284+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "c3c56607-2ea6-4d17-ae72-cba9e2645a3b",
+        "name": "BedRoom",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:29:28.034834+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "c52cf43e-5ed7-487c-a31c-d78516299ae2",
+        "name": "Clothes",
+        "type": "EXPENSE",
+        "created_at": "2026-06-18T19:30:47.762605+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4784b76d-ef5d-4807-af33-7a422849647a",
+        "name": "ATK",
+        "type": "EXPENSE",
+        "created_at": "2026-06-19T11:51:14.078664+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "03b1e479-518a-479b-856b-ba1deec26a0a",
+        "name": "Electronics",
+        "type": "EXPENSE",
+        "created_at": "2026-06-21T07:01:29.003202+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "fde9d3b6-877b-4e31-b203-0cf6fe5fe05f",
+        "name": "Makan 2",
+        "type": "INCOME",
+        "created_at": "2026-06-28T08:05:06.650868+00:00",
+        "user_id": "4ca67636-f951-469f-b1e3-1280404f0bfa"
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "name": "Gaji",
+        "type": "INCOME",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "name": "Freelance",
+        "type": "INCOME",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000003",
+        "name": "Investasi Saham",
+        "type": "INCOME",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "name": "Makanan & Minuman",
+        "type": "EXPENSE",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "name": "Transportasi",
+        "type": "EXPENSE",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000006",
+        "name": "Hiburan",
+        "type": "EXPENSE",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "name": "Tagihan",
+        "type": "EXPENSE",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      },
+      {
+        "id": "b2c3d4e5-0002-0002-0002-000000000008",
+        "name": "Reksa Dana",
+        "type": "INVESTMENT_BUY",
+        "created_at": "2026-06-11T15:56:12.709218+00:00",
+        "user_id": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "cd311d7b-0f30-4d5c-b162-29960dac25b4",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "amount": 425000,
+        "type": "EXPENSE",
+        "description": "Tagihan BPJS + PLN",
+        "created_at": "2026-02-20T02:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "20191822-8865-412d-8948-cee3f0a1223f",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000008",
+        "amount": 1500000,
+        "type": "INVESTMENT_BUY",
+        "description": "Top Up Reksa Dana Saham",
+        "created_at": "2026-02-25T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "c22764f2-622b-48bb-91cc-58c9ef6cfa13",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "amount": 8500000,
+        "type": "INCOME",
+        "description": "Gaji Bulan Maret",
+        "created_at": "2026-03-01T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4f290e8d-f3d0-4d8a-a896-5e5c317278ab",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 2100000,
+        "type": "INCOME",
+        "description": "Upwork — Mobile App UI",
+        "created_at": "2026-03-04T09:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "d6b49587-cea5-4e65-8d56-3b251285572f",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 290000,
+        "type": "EXPENSE",
+        "description": "Belanja Bulanan Alfamart",
+        "created_at": "2026-03-05T04:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "27eaee58-979d-40d8-a286-684c331adfe8",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "amount": 65000,
+        "type": "EXPENSE",
+        "description": "Grab ke Kantor (5 hari)",
+        "created_at": "2026-03-10T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4d312533-aadd-4dca-8eb7-adb3f33f83a2",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000006",
+        "amount": 119900,
+        "type": "EXPENSE",
+        "description": "Perpanjang YouTube Premium",
+        "created_at": "2026-03-15T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "b4a33a1a-0fda-4487-837b-812dd12c2948",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000008",
+        "amount": 3000000,
+        "type": "INVESTMENT_BUY",
+        "description": "Beli Reksa Dana Campuran",
+        "created_at": "2026-03-20T02:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "dbb47262-8683-4a2a-a9f3-224ca0e10eb3",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "amount": 8500000,
+        "type": "INCOME",
+        "description": "Gaji Bulan April",
+        "created_at": "2026-04-01T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "23b363f7-0e25-48e1-a12a-df0ef3e58203",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 900000,
+        "type": "INCOME",
+        "description": "Freelance — Branding Kit",
+        "created_at": "2026-04-08T07:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "73b93b07-172a-4c91-a41c-5a234719a936",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 280000,
+        "type": "EXPENSE",
+        "description": "Makan Siang Tim (4 orang)",
+        "created_at": "2026-04-10T05:30:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "c4a93cb8-e766-4125-89b6-86984cf16825",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "amount": 450000,
+        "type": "EXPENSE",
+        "description": "Tagihan Listrik & Air April",
+        "created_at": "2026-04-12T02:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "57f472bd-ac15-432b-80b3-c3a231cc79a4",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000003",
+        "amount": 1200000,
+        "type": "INCOME",
+        "description": "Dividen Saham BBRI",
+        "created_at": "2026-04-20T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "8e9ee74b-be2b-4817-9289-a05c84018c8b",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "amount": 8500000,
+        "type": "INCOME",
+        "description": "Gaji Bulan Mei",
+        "created_at": "2026-05-01T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "b9335df9-e4e1-4135-9697-ca06284f5c38",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 1650000,
+        "type": "INCOME",
+        "description": "Upwork — SaaS Landing Page",
+        "created_at": "2026-05-06T08:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "63341b0e-8341-4235-9182-ea37db3d572a",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "amount": 95000,
+        "type": "EXPENSE",
+        "description": "Bensin & Tol Mingguan",
+        "created_at": "2026-05-08T00:30:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "f43034b3-4130-418b-9332-4acc89a2b080",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 185000,
+        "type": "EXPENSE",
+        "description": "Dinner Anniversary",
+        "created_at": "2026-05-20T12:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "debd2427-443d-4708-84b8-6f722fb81729",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "amount": 8500000,
+        "type": "INCOME",
+        "description": "Gaji Bulan Juni",
+        "created_at": "2026-06-01T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "40b98cb1-133d-4700-97df-b4fd2defcf57",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "amount": 500000,
+        "type": "EXPENSE",
+        "description": "TEST_ANOMALY: Tagihan Bulanan (May)",
+        "created_at": "2026-05-15T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "6a90058f-73cc-43f4-b40e-f7bacdbf8e06",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 1850000,
+        "type": "INCOME",
+        "description": "Upwork — UI Design Project",
+        "created_at": "2026-06-04T07:30:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "938247d5-ac1e-41b8-9064-523d6a6aec7c",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "amount": 550000,
+        "type": "EXPENSE",
+        "description": "TEST_ANOMALY: Tagihan Bulanan (June)",
+        "created_at": "2026-06-15T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "ef20d90d-3272-491a-8c74-af1a25908bae",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "amount": 8500000,
+        "type": "INCOME",
+        "description": "Gaji Bulan Januari",
+        "created_at": "2026-01-01T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "930b06c7-c7f0-416c-a06d-5cf0e84c90da",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 1200000,
+        "type": "INCOME",
+        "description": "Freelance — Dashboard Design",
+        "created_at": "2026-01-05T07:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "e329afa0-9652-4f76-afd3-08d504f29387",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 320000,
+        "type": "EXPENSE",
+        "description": "Groceries Weekly",
+        "created_at": "2026-01-07T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "08b34e70-d139-4d1a-89d7-005105ffda3c",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "amount": 85000,
+        "type": "EXPENSE",
+        "description": "Bensin + Parkir",
+        "created_at": "2026-01-08T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "166a51ef-f102-479a-8f9a-979d03efd1ee",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "amount": 450000,
+        "type": "EXPENSE",
+        "description": "Tagihan PLN Bulan Januari",
+        "created_at": "2026-01-10T02:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "458ecaa6-1195-4572-8a9b-3fb84e06b1dd",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000008",
+        "amount": 2000000,
+        "type": "INVESTMENT_BUY",
+        "description": "Beli Reksa Dana Pendapatan Tetap",
+        "created_at": "2026-01-15T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "c4c9ecfc-f10f-4bd3-a40a-fed357df0ed9",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000001",
+        "amount": 8500000,
+        "type": "INCOME",
+        "description": "Gaji Bulan Februari",
+        "created_at": "2026-02-01T01:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "86b09d88-afc9-4cce-b6cd-692f57bef86c",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 750000,
+        "type": "INCOME",
+        "description": "Freelance — Logo Redesign",
+        "created_at": "2026-02-06T07:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "bac832fd-8fad-4b88-8f9e-2d0c1f8e6a81",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000006",
+        "amount": 250000,
+        "type": "EXPENSE",
+        "description": "Nonton Bioskop (2 tiket)",
+        "created_at": "2026-02-14T12:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "183f6a75-40fe-447d-a031-263a6704237e",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 145000,
+        "type": "EXPENSE",
+        "description": "Makan di Restoran",
+        "created_at": "2026-02-18T06:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4907956b-96c0-4064-9c14-c30405f73902",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 1500000,
+        "type": "EXPENSE",
+        "description": "TEST_ANOMALY: Makan Malam Mewah",
+        "created_at": "2026-06-20T12:30:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "50adf2c9-9206-48a2-a09b-377d49792b57",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "amount": 285000,
+        "type": "EXPENSE",
+        "description": "Makan Siang Bersama Tim",
+        "created_at": "2026-06-05T05:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "60d90702-6f6a-4178-8746-af6c4f875e24",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "amount": 85000,
+        "type": "EXPENSE",
+        "description": "Grab ke Kantor",
+        "created_at": "2026-06-06T00:45:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "f4c895dc-3f13-4ae1-8426-dadf73ad7cfa",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000006",
+        "amount": 119900,
+        "type": "EXPENSE",
+        "description": "Langganan YouTube Premium",
+        "created_at": "2026-06-07T03:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "cac954ec-c797-4824-9258-aa64cacaca70",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000003",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000008",
+        "amount": 2000000,
+        "type": "INVESTMENT_BUY",
+        "description": "Beli Reksa Dana Pendapatan Tetap",
+        "created_at": "2026-06-08T02:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "5b037175-576b-4d89-8a39-8fb6b1b6317e",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000002",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000002",
+        "amount": 650000,
+        "type": "INCOME",
+        "description": "Freelance — Desain Logo",
+        "created_at": "2026-06-10T08:00:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "38f79d30-066c-4ca5-a2da-b9a9b4d918e8",
+        "wallet_id": "a1b2c3d4-0001-0001-0001-000000000001",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000007",
+        "amount": 450000,
+        "type": "EXPENSE",
+        "description": "Tagihan Listrik Bulan Juni",
+        "created_at": "2026-06-11T01:30:00+00:00",
+        "transfer_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      }
+    ],
+    "financial_goals": [],
+    "transfers": [
+      {
+        "id": "cb465f6e-a60f-4335-b941-146094e3603d",
+        "from_wallet_id": "25ceef9f-3cdc-40c1-9ced-d62e08b59269",
+        "to_wallet_id": "a789ae25-799c-4d88-acb8-212b25f6b233",
+        "amount": 50000,
+        "admin_fee": 0,
+        "notes": null,
+        "transaction_date": "2026-06-17T16:46:26.397+00:00",
+        "created_at": "2026-06-17T16:46:26.823686+00:00",
+        "to_goal_id": null,
+        "from_goal_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "ecb2c9c1-e80e-4765-8711-f9c4f8c52513",
+        "from_wallet_id": "25ceef9f-3cdc-40c1-9ced-d62e08b59269",
+        "to_wallet_id": "37ba9855-55d4-43c7-990b-0502d3f643c8",
+        "amount": 50000,
+        "admin_fee": 0,
+        "notes": "Tukar cash",
+        "transaction_date": "2026-06-17T16:48:08.052+00:00",
+        "created_at": "2026-06-17T16:48:08.527788+00:00",
+        "to_goal_id": null,
+        "from_goal_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "4b8d0bc3-48f3-44d0-a503-7376ccfebf33",
+        "from_wallet_id": "8ecdf2bb-1499-4daa-a3ed-97ac936b7c72",
+        "to_wallet_id": "37ba9855-55d4-43c7-990b-0502d3f643c8",
+        "amount": 100000,
+        "admin_fee": 0,
+        "notes": "Beli Token Tukar Cash ke SpayLater",
+        "transaction_date": "2026-06-24T08:11:42.652+00:00",
+        "created_at": "2026-06-24T08:12:02.994494+00:00",
+        "to_goal_id": null,
+        "from_goal_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "0705bffd-d88f-4b0d-89d8-fc5c07ea9b5f",
+        "from_wallet_id": "c95f092c-0ecd-4817-8435-3a86bc2e015f",
+        "to_wallet_id": "eca22e16-7d5a-4847-ba1f-f8bd03eae6a7",
+        "amount": 960000,
+        "admin_fee": 0,
+        "notes": null,
+        "transaction_date": "2026-06-28T07:23:20.151+00:00",
+        "created_at": "2026-06-28T07:23:29.946702+00:00",
+        "to_goal_id": null,
+        "from_goal_id": null,
+        "user_id": "4ca67636-f951-469f-b1e3-1280404f0bfa"
+      },
+      {
+        "id": "20415dfd-2c51-42af-aa17-f88477bc4190",
+        "from_wallet_id": "8ecdf2bb-1499-4daa-a3ed-97ac936b7c72",
+        "to_wallet_id": "37ba9855-55d4-43c7-990b-0502d3f643c8",
+        "amount": 100000,
+        "admin_fee": 0,
+        "notes": "Tarik cash",
+        "transaction_date": "2026-06-21T06:59:51.858+00:00",
+        "created_at": "2026-06-21T06:59:52.00976+00:00",
+        "to_goal_id": null,
+        "from_goal_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "703fb94f-5b8a-47ab-b629-bdcb1eb98f62",
+        "from_wallet_id": "25ceef9f-3cdc-40c1-9ced-d62e08b59269",
+        "to_wallet_id": "37ba9855-55d4-43c7-990b-0502d3f643c8",
+        "amount": 20000,
+        "admin_fee": 0,
+        "notes": "Tf tuker cash",
+        "transaction_date": "2026-06-13T07:41:33.781+00:00",
+        "created_at": "2026-06-28T07:42:17.747305+00:00",
+        "to_goal_id": null,
+        "from_goal_id": null,
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      }
+    ],
+    "budgets": [
+      {
+        "id": "b1768793-856c-42bb-9ce8-ff6a085e563f",
+        "category_id": "4e73f074-277f-4d03-832c-b2db126f2b85",
+        "limit_amount": 100000,
+        "month": 6,
+        "year": 2026,
+        "created_at": "2026-06-12T20:37:56.132332+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "2ee2f348-72e4-4b2b-b661-741974911528",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000004",
+        "limit_amount": 1000000,
+        "month": 6,
+        "year": 2026,
+        "created_at": "2026-06-12T20:37:11.108494+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "a6eb8e22-35c5-4204-8114-6a490d1fcb4e",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "limit_amount": 200000,
+        "month": 6,
+        "year": 2026,
+        "created_at": "2026-06-12T20:37:11.108494+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "f24c5822-19d1-4ce2-b5b4-7bdfca914c6c",
+        "category_id": "c42c6a9a-6863-4738-b6c2-3c8e0e7270f3",
+        "limit_amount": 1100000,
+        "month": 6,
+        "year": 2026,
+        "created_at": "2026-06-24T08:04:44.090537+00:00",
+        "user_id": "b0329e19-6c4f-4a64-8a09-b9b6e6e9ca34"
+      },
+      {
+        "id": "3458b6d1-6fe9-40fb-837e-263d68c8d3fb",
+        "category_id": "b2c3d4e5-0002-0002-0002-000000000005",
+        "limit_amount": 2000000,
+        "month": 6,
+        "year": 2026,
+        "created_at": "2026-06-28T07:21:41.137542+00:00",
+        "user_id": "4ca67636-f951-469f-b1e3-1280404f0bfa"
+      }
+    ]
+  }
+}

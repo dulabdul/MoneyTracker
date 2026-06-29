@@ -155,8 +155,8 @@ export interface FilterParams {
 }
 
 // ─── Dashboard Data Fetcher (SSR) ─────────────────────────────────────────────
-export async function fetchDashboardData(supabaseClient: any, params: FilterParams = {}): Promise<DashboardStats | null> {
-  if (!isConfigured || !supabaseClient) return null;
+export async function fetchDashboardData(supabaseClient: any, userId: string, params: FilterParams = {}): Promise<DashboardStats | null> {
+  if (!isConfigured || !supabaseClient || !userId) return null;
 
   try {
     const defaultYear = 2026;
@@ -234,6 +234,7 @@ export async function fetchDashboardData(supabaseClient: any, params: FilterPara
 
     // Call the single consolidated dashboard stats RPC function
     const { data, error } = await supabaseClient.rpc("get_dashboard_stats", {
+      p_user_id: userId,
       p_start_time: startStr,
       p_end_time: endStr,
       p_week_start: weekStart.toISOString(),
@@ -444,17 +445,15 @@ export interface FinancialHealth {
 
 export async function fetchFinancialHealth(
   supabaseClient: any,
+  userId: string,
   year: number,
   month: number
 ): Promise<FinancialHealth | null> {
-  if (!isConfigured || !supabaseClient) return null;
+  if (!isConfigured || !supabaseClient || !userId) return null;
 
   try {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return null;
-
     const { data, error } = await supabaseClient.rpc("get_financial_health_score", {
-      p_user_id: user.id,
+      p_user_id: userId,
       p_year: year,
       p_month: month
     });

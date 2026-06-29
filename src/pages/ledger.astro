@@ -4,7 +4,10 @@ import LedgerManager from "../components/LedgerManager";
 import { isConfigured } from "../lib/supabase";
 import type { TransactionRow, Wallet, Category } from "../lib/supabase";
 
-const { supabase } = Astro.locals;
+const { supabase, user } = Astro.locals;
+if (!user) {
+  return Astro.redirect('/login');
+}
 
 // ── Mock fallback (when Supabase is not configured) ────────────────────────────
 const MOCK_WALLETS: Wallet[] = [];
@@ -21,10 +24,11 @@ if (isConfigured && supabase) {
       supabase
         .from("transactions")
         .select("*, wallets(name), categories(name)")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(500),
-      supabase.from("wallets").select("*"),
-      supabase.from("categories").select("id, name, type"),
+      supabase.from("wallets").select("*").eq("user_id", user.id),
+      supabase.from("categories").select("id, name, type").eq("user_id", user.id),
     ]);
 
     if (!txRes.error && txRes.data) {

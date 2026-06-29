@@ -34,8 +34,8 @@ DECLARE
   v_start_date timestamptz;
   v_end_date timestamptz;
 BEGIN
-  -- 1. Security Check: ensure user can only query their own data
-  IF p_user_id != auth.uid() THEN
+  -- 1. Security Check: ensure user can only query their own data (unless service_role where auth.uid() is null)
+  IF auth.uid() IS NOT NULL AND p_user_id != auth.uid() THEN
     RAISE EXCEPTION 'Access Denied: You can only view your own financial health.';
   END IF;
 

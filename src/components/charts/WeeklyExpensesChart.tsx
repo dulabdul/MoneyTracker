@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { createBrowserScopedClient } from "../../lib/supabase";
 import type { WeeklyExpense } from "../../lib/supabase";
 
 interface WeeklyExpensesChartProps {
@@ -54,6 +55,7 @@ export default function WeeklyExpensesChart({
   useEffect(() => {
     async function reloadData() {
       try {
+        const supabase = createBrowserScopedClient();
         const { fetchDashboardData } = await import("../../lib/supabase");
         // Get filters from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -62,7 +64,9 @@ export default function WeeklyExpensesChart({
         const month = parseInt(urlParams.get("month") || "6", 10);
         const date = urlParams.get("date") || undefined;
 
-        const data = await fetchDashboardData({
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const data = await fetchDashboardData(supabase, user.id, {
           period,
           year,
           month,

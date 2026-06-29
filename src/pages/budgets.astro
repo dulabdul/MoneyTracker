@@ -4,7 +4,10 @@ import BudgetManager from "../components/BudgetManager";
 import { isConfigured } from "../lib/supabase";
 import type { BudgetRow, Category } from "../components/BudgetManager";
 
-const { supabase } = Astro.locals;
+const { supabase, user } = Astro.locals;
+if (!user) {
+  return Astro.redirect('/login');
+}
 
 // Extract month/year filters from URL, default to June 2026 to align with seed transactions
 const activeMonth = Number(Astro.url.searchParams.get("month") || 6);
@@ -19,10 +22,10 @@ if (isConfigured && supabase) {
     const sDate = new Date(activeYear, activeMonth - 1, 1);
     const eDate = new Date(activeYear, activeMonth, 0, 23, 59, 59, 999);
 
-    const [catRes, budgetRes, txRes] = await Promise.all([
-      supabase.from("categories").select("id, name, type"),
-      supabase.from("budgets").select("id, category_id, limit_amount, month, year").eq("month", activeMonth).eq("year", activeYear),
-      supabase.from("transactions").select("category_id, amount").eq("type", "EXPENSE").gte("created_at", sDate.toISOString()).lte("created_at", eDate.toISOString())
+    const [budgetRes, catRes, txRes] = await Promise.all([
+      supabase.from("budgets").select("id, category_id, limit_amount, month, year").eq("user_id", user.id).eq("month", activeMonth).eq("year", activeYear),
+      supabase.from("categories").select("id, name, type").eq("user_id", user.id),
+      supabase.from("transactions").select("category_id, amount").eq("user_id", user.id).eq("type", "EXPENSE").gte("created_at", sDate.toISOString()).lte("created_at", eDate.toISOString())
     ]);
 
     if (!catRes.error && catRes.data) {

@@ -26,8 +26,12 @@ const month = parseInt(url.searchParams.get("month") || "6", 10);
 const date = url.searchParams.get("date") || undefined;
 const type = (url.searchParams.get("type") as "all" | "income" | "spend") || "all";
 
+if (!user) {
+  return Astro.redirect('/login');
+}
+
 // ── Live DB fetch ─────────────────────────────────────────────────────────────
-const liveData = await fetchDashboardData(supabase, {
+const liveData = await fetchDashboardData(supabase, user.id, {
   period,
   year,
   month,
@@ -35,7 +39,7 @@ const liveData = await fetchDashboardData(supabase, {
   endDate: date,
 });
 
-const healthData = await fetchFinancialHealth(supabase, year, month);
+const healthData = await fetchFinancialHealth(supabase, user.id, year, month);
 
 // ── IDR formatter ─────────────────────────────────────────────────────────────
 function formatIDR(amount: number): string {

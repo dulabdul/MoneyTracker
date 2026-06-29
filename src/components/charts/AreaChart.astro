@@ -127,6 +127,14 @@ const areaPath = points.length > 0
 </div>
 
 <script>
+  declare global {
+    interface Window {
+      initAreaChart: () => void;
+      donutChartsInitialized: boolean;
+      areaChartsInitialized: boolean;
+    }
+  }
+
   function initAreaChart() {
     document.querySelectorAll('.area-chart-container').forEach(container => {
       const markers       = container.querySelectorAll('.area-marker');

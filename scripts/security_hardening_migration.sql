@@ -267,6 +267,8 @@ $$;
 
 -- Hardened public.create_transfer_v3 RPC function (used by active client frontend code)
 CREATE OR REPLACE FUNCTION public.create_transfer_v3(
+  p_user_id uuid,
+
   p_from_wallet_id uuid,
   p_from_goal_id uuid,
   p_to_wallet_id uuid,
@@ -287,21 +289,21 @@ DECLARE
   v_to_name text;
   v_tx_id uuid;
 BEGIN
-  -- 🛡️ Mandatory security guard clause inside RPC (bypassed only if auth.uid() is null, e.g., service role tasks)
-  IF auth.uid() IS NOT NULL THEN
-    IF p_from_wallet_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.wallets WHERE id = p_from_wallet_id AND user_id = auth.uid()) THEN
+  -- 🛡️ Mandatory security guard clause inside RPC (bypassed only if p_user_id is null, e.g., service role tasks)
+  IF p_user_id IS NOT NULL THEN
+    IF p_from_wallet_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.wallets WHERE id = p_from_wallet_id AND user_id = p_user_id) THEN
       RAISE EXCEPTION 'Access Denied: Unauthorized source wallet asset ownership';
     END IF;
 
-    IF p_from_goal_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.financial_goals WHERE id = p_from_goal_id AND user_id = auth.uid()) THEN
+    IF p_from_goal_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.financial_goals WHERE id = p_from_goal_id AND user_id = p_user_id) THEN
       RAISE EXCEPTION 'Access Denied: Unauthorized source goal asset ownership';
     END IF;
 
-    IF p_to_wallet_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.wallets WHERE id = p_to_wallet_id AND user_id = auth.uid()) THEN
+    IF p_to_wallet_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.wallets WHERE id = p_to_wallet_id AND user_id = p_user_id) THEN
       RAISE EXCEPTION 'Access Denied: Unauthorized destination wallet asset ownership';
     END IF;
 
-    IF p_to_goal_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.financial_goals WHERE id = p_to_goal_id AND user_id = auth.uid()) THEN
+    IF p_to_goal_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.financial_goals WHERE id = p_to_goal_id AND user_id = p_user_id) THEN
       RAISE EXCEPTION 'Access Denied: Unauthorized destination goal asset ownership';
     END IF;
   END IF;

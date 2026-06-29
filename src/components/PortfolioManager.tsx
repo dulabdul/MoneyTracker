@@ -634,10 +634,13 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
 
   const reloadData = useCallback(async () => {
     if (isConfigured && supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       try {
         const { data, error } = await supabase
           .from("assets_portfolio")
-          .select("id, asset_name, asset_type, total_units, average_buy_price, current_value, updated_at")
+          .select("*")
+          .eq("user_id", user.id)
           .order("asset_type", { ascending: true })
           .order("current_value", { ascending: false });
 
@@ -692,8 +695,10 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
 
   const handleAddAsset = useCallback(async (data: z.infer<typeof addAssetSchema>) => {
     if (isConfigured && supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       const { data: inserted, error } = await supabase
-        .from("assets_portfolio").insert(data).select().single();
+        .from("assets_portfolio").insert({ ...data, user_id: user.id }).select().single();
       if (error) { toast(`Gagal menambahkan aset: ${error.message}`, "error"); throw error; }
       setAssets((prev) => [inserted as AssetRow, ...prev]);
     } else {
@@ -710,8 +715,12 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
 
   const handleUpdatePrice = useCallback(async (id: string, currentValue: number) => {
     if (isConfigured && supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       const { error } = await supabase.from("assets_portfolio")
-        .update({ current_value: currentValue, updated_at: new Date().toISOString() }).eq("id", id);
+        .update({ current_value: currentValue, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", user.id);
       if (error) { toast(`Gagal update harga: ${error.message}`, "error"); throw error; }
     }
     setAssets((prev) => prev.map((a) =>
@@ -727,7 +736,12 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
     setDeleting(true);
     try {
       if (isConfigured && supabase) {
-        const { error } = await supabase.from("assets_portfolio").delete().eq("id", deleteTarget.id);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error } = await supabase.from("assets_portfolio")
+          .delete()
+          .eq("id", deleteTarget.id)
+          .eq("user_id", user.id);
         if (error) { toast(`Gagal hapus aset: ${error.message}`, "error"); return; }
       }
       setAssets((prev) => prev.filter((a) => a.id !== deleteTarget.id));

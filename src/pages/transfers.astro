@@ -4,7 +4,10 @@ import TransferManager from "../components/TransferManager";
 import { isConfigured } from "../lib/supabase";
 import type { TransferRow, Wallet, FinancialGoal } from "../components/TransferManager";
 
-const { supabase } = Astro.locals;
+const { supabase, user } = Astro.locals;
+if (!user) {
+  return Astro.redirect('/login');
+}
 
 let transfers: TransferRow[] = [];
 let wallets: Wallet[] = [];
@@ -31,10 +34,12 @@ if (isConfigured && supabase) {
           to_wallet:wallets!to_wallet_id(name),
           to_goal:financial_goals!to_goal_id(name)
         `)
+        .eq("user_id", user.id)
         .order("transaction_date", { ascending: false }),
       supabase
         .from("wallets")
         .select("id, name, balance")
+        .eq("user_id", user.id)
         .order("name", { ascending: true }),
       supabase
         .from("financial_goals")
