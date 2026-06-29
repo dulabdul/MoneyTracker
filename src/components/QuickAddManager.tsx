@@ -100,7 +100,7 @@ export default function QuickAddManager({
               .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
               .eq("user_id", user.id)
               .order("name", { ascending: true }),
-            supabase!.from("categories").select("id, name, type").eq("user_id", user.id).order("name", { ascending: true }),
+            supabase!.from("categories").select("id, name, type").or(`user_id.eq.${user.id},user_id.is.null`).order("name", { ascending: true }),
           ]);
           if (wRes.data) setWallets(wRes.data as Wallet[]);
           if (cRes.data) setCategories(cRes.data);

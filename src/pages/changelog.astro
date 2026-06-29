@@ -22,6 +22,7 @@ const changelogs: ChangelogEntry[] = [
     fixed: [
       "Refactored Supabase RPC queries (get_dashboard_stats, get_cashflow_analytics, etc.) to use explicit p_user_id parameters to fix transaction/analytics disappearance issues during SSR.",
       "Resolved cross-tenant data leaks and state inconsistencies on SSR pages (ledger, portfolio, transfers, budgets, goals) by binding all reads to request-scoped user IDs.",
+      "Fixed category dropdown disappearing bug in Quick Add modal and pages by refactoring queries to fetch both system-defined (where user_id is null) and user-custom categories.",
       "Patched client-side state mutation queries (update/delete) in LedgerManager and PortfolioManager to enforce user_id constraints.",
       "Fixed 60+ TypeScript compilation errors including Playwright imports, global window types on AreaChart/DonutChart, and unused variables."
     ]

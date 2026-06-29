@@ -56,6 +56,7 @@ export default function WeeklyExpensesChart({
     async function reloadData() {
       try {
         const supabase = createBrowserScopedClient();
+        if (!supabase) return;
         const { fetchDashboardData } = await import("../../lib/supabase");
         // Get filters from URL
         const urlParams = new URLSearchParams(window.location.search);

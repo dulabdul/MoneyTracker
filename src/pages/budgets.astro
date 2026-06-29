@@ -24,7 +24,7 @@ if (isConfigured && supabase) {
 
     const [budgetRes, catRes, txRes] = await Promise.all([
       supabase.from("budgets").select("id, category_id, limit_amount, month, year").eq("user_id", user.id).eq("month", activeMonth).eq("year", activeYear),
-      supabase.from("categories").select("id, name, type").eq("user_id", user.id),
+      supabase.from("categories").select("id, name, type").or(`user_id.eq.${user.id},user_id.is.null`),
       supabase.from("transactions").select("category_id, amount").eq("user_id", user.id).eq("type", "EXPENSE").gte("created_at", sDate.toISOString()).lte("created_at", eDate.toISOString())
     ]);
 
