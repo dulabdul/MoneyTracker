@@ -98,7 +98,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           context.cookies.set(name, value, {
             ...options,
             path: '/',
-            httpOnly: !isDeleting,
+            httpOnly: false, // Must be false so browser client can read the session
             secure: !isDeleting,
             sameSite: isDeleting ? undefined : 'lax',
             maxAge: isDeleting ? 0 : 7776000, // 90 days rolling
