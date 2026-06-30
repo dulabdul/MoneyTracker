@@ -86,14 +86,17 @@ export default function QuickAddManager({
     return () => window.removeEventListener("open-pay-bill", handlePayBillOpen);
   }, []);
 
-  // Fetch wallets and categories client-side when dialog opens
   useEffect(() => {
     if ((open || payBillOpen) && isConfigured && supabase) {
+      // If we already received data from Layout SSR, skip fetching to make it instant!
+      if (wallets.length > 0 && categories.length > 0) return;
+
       async function loadOptions() {
         setLoading(true);
         try {
-          const { data: { user } } = await supabase!.auth.getUser();
-          if (!user) return;
+          const { data: { session } } = await supabase!.auth.getSession();
+          if (!session?.user) return;
+          const user = session.user;
           const [wRes, cRes] = await Promise.all([
             supabase!
               .from("wallets")

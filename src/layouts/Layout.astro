@@ -4,6 +4,8 @@ import ToastContainer from "../components/ui/ToastContainer";
 import QuickAddManager from "../components/QuickAddManager";
 import PwaInstallModal from "../components/PwaInstallModal";
 import PwaUpdateToast from "../components/PwaUpdateToast";
+import { isConfigured } from "../lib/supabase";
+import type { Wallet, Category } from "../lib/supabase";
 
 interface Props {
   title?: string;
@@ -46,6 +48,23 @@ const getInitials = (name: string) => {
   return name.slice(0, 2).toUpperCase();
 };
 const userInitials = getInitials(userName);
+
+// Fetch global data for Quick Add modal so it's instantly available
+let globalWallets: Wallet[] = [];
+let globalCategories: Category[] = [];
+
+if (user && isConfigured && Astro.locals.supabase) {
+  try {
+    const [wRes, cRes] = await Promise.all([
+      Astro.locals.supabase.from("wallets").select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset").eq("user_id", user.id).order("name", { ascending: true }),
+      Astro.locals.supabase.from("categories").select("id, name, type").or(`user_id.eq.${user.id},user_id.is.null`).order("name", { ascending: true })
+    ]);
+    if (wRes.data) globalWallets = wRes.data as Wallet[];
+    if (cRes.data) globalCategories = cRes.data as Category[];
+  } catch (err) {
+    console.error("Failed to fetch global wallets/categories for Layout:", err);
+  }
+}
 ---
 
 <!doctype html>
@@ -1138,7 +1157,7 @@ const userInitials = getInitials(userName);
         }
       });
     </script>
-    <QuickAddManager client:only="react" />
+    <QuickAddManager client:only="react" wallets={globalWallets} categories={globalCategories} />
     {isOverview && <PwaInstallModal client:only="react" />}
     <PwaUpdateToast client:only="react" />
     <ToastContainer client:load />
