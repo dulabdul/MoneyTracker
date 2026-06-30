@@ -342,8 +342,9 @@ export async function adjustWalletBalance(
   delta: number
 ): Promise<Wallet | null> {
   if (!isConfigured || !supabaseClient) return null;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return null;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session?.user) return null;
+  const user = session.user;
   
   // Use RPC for atomic read-modify-write to prevent race conditions
   const { data: current, error: fetchErr } = await supabaseClient
@@ -362,7 +363,11 @@ export async function adjustWalletBalance(
     .eq("user_id", user.id)
     .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .single();
-  if (updateErr) return null;
+
+  if (updateErr) {
+    console.error("adjustWalletBalance error:", updateErr);
+    return null;
+  }
   return updated as Wallet;
 }
 
@@ -384,8 +389,9 @@ export async function updateWallet(
   }
 ): Promise<Wallet | null> {
   if (!isConfigured || !supabaseClient) return null;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return null;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session?.user) return null;
+  const user = session.user;
 
   const { data: updated, error } = await supabaseClient
     .from("wallets")
@@ -394,7 +400,11 @@ export async function updateWallet(
     .eq("user_id", user.id)
     .select("id, name, balance, account_type, credit_limit, billing_date, billing_month_offset, due_date, due_month_offset")
     .single();
-  if (error) return null;
+    
+  if (error) {
+    console.error("updateWallet error:", error);
+    return null;
+  }
   return updated as Wallet;
 }
 
@@ -403,15 +413,21 @@ export async function updateWallet(
  */
 export async function deleteWallet(supabaseClient: any, walletId: string): Promise<boolean> {
   if (!isConfigured || !supabaseClient) return false;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return false;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session?.user) return false;
+  const user = session.user;
 
   const { error } = await supabaseClient
     .from("wallets")
     .delete()
     .eq("id", walletId)
     .eq("user_id", user.id);
-  return !error;
+    
+  if (error) {
+    console.error("deleteWallet error:", error);
+    return false;
+  }
+  return true;
 }
 
 /**

@@ -18,11 +18,13 @@ const changelogs: ChangelogEntry[] = [
     date: "1 Juli 2026",
     improved: [
       "Injected server-side pre-fetched wallets and categories directly into the Layout component to eliminate empty dropdowns and eliminate loading latency in the Quick Add modal.",
-      "Optimized client-side fallback query in Quick Add from auth.getUser() to auth.getSession() to improve offline and slow network responsiveness."
+      "Optimized client-side fallback query in Quick Add from auth.getUser() to auth.getSession() to improve offline and slow network responsiveness.",
+      "Automated PWA update detection by appending a build-time UNIX timestamp to sw.js during Vercel builds, forcing the browser to detect the code update and show the 'New Version Available' toast."
     ],
     fixed: [
       "Fixed E2E Playwright test suite failures by implementing a test-mode cookie bypass in middleware.ts, allowing tests to verify pages without full OAuth redirection.",
-      "Updated outdated E2E locators (e.g. Dashboard Overview, Riwayat Transaksi, Quick Add button) to match the current localized UI layout."
+      "Updated outdated E2E locators (e.g. Dashboard Overview, Riwayat Transaksi, Quick Add button) to match the current localized UI layout.",
+      "Resolved 'Gagal Memperbarui Akun di database' error in AccountManager by replacing auth.getUser() with auth.getSession() in wallet mutation helpers (update, delete, adjust balance) to prevent mobile/offline network timeouts."
     ]
   },
   {
