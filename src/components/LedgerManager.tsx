@@ -40,6 +40,7 @@ const supabase = createBrowserScopedClient();
 import type { TransactionRow, Wallet, Category, TransactionType } from "@/lib/supabase";
 import FilterControls from "./FilterControls";
 import DatePicker from "@/components/ui/DatePicker";
+import { logClientAction, logClientError } from "../lib/logger";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
@@ -962,7 +963,8 @@ export default function LedgerManager({
         if (walletRes.data) {
           setWallets(walletRes.data);
         }
-      } catch (err) {
+      } catch (err: any) {
+        logClientError('FETCH_DATA', err);
         console.error("Failed to refetch transactions data:", err);
       }
     }
@@ -1096,7 +1098,12 @@ export default function LedgerManager({
         .insert({ ...data })
         .select("*, wallets(name), categories(name)")
         .single();
-      if (error) { setDbError(error.message); return; }
+      if (error) { 
+        logClientError('ADD_TRANSACTION', error);
+        setDbError(error.message); 
+        return; 
+      }
+      logClientAction('ADD_TRANSACTION', { transactionId: inserted.id, type: data.type, amount: data.amount });
       const row: TransactionRow = {
         ...inserted,
         wallet_name: (inserted as any).wallets?.name ?? getWalletName(data.wallet_id),

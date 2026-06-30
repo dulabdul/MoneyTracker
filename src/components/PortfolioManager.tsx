@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CurrencyInput from "@/components/ui/CurrencyInput";
 import { createBrowserScopedClient, isConfigured } from "@/lib/supabase";
+import { logClientAction, logClientError } from "../lib/logger";
 const supabase = createBrowserScopedClient();
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -699,7 +700,12 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
       if (!user) return;
       const { data: inserted, error } = await supabase
         .from("assets_portfolio").insert({ ...data, user_id: user.id }).select().single();
-      if (error) { toast(`Gagal menambahkan aset: ${error.message}`, "error"); throw error; }
+      if (error) { 
+        logClientError('ADD_PORTFOLIO_ASSET', error);
+        toast(`Gagal menambahkan aset: ${error.message}`, "error"); 
+        throw error; 
+      }
+      logClientAction('ADD_PORTFOLIO_ASSET', { assetId: inserted?.id, name: inserted?.asset_name });
       setAssets((prev) => [inserted as AssetRow, ...prev]);
     } else {
       setAssets((prev) => [{
@@ -721,7 +727,12 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
         .update({ current_value: currentValue, updated_at: new Date().toISOString() })
         .eq("id", id)
         .eq("user_id", user.id);
-      if (error) { toast(`Gagal update harga: ${error.message}`, "error"); throw error; }
+      if (error) { 
+        logClientError('UPDATE_ASSET_PRICE', error);
+        toast(`Gagal update harga: ${error.message}`, "error"); 
+        throw error; 
+      }
+      logClientAction('UPDATE_ASSET_PRICE', { assetId: id });
     }
     setAssets((prev) => prev.map((a) =>
       a.id === id ? { ...a, current_value: currentValue, updated_at: new Date().toISOString() } : a
@@ -742,7 +753,11 @@ export default function PortfolioManager({ initialAssets }: PortfolioManagerProp
           .delete()
           .eq("id", deleteTarget.id)
           .eq("user_id", user.id);
-        if (error) { toast(`Gagal hapus aset: ${error.message}`, "error"); return; }
+        if (error) { 
+          logClientError('DELETE_PORTFOLIO_ASSET', error);
+          toast(`Gagal hapus aset: ${error.message}`, "error"); return; 
+        }
+        logClientAction('DELETE_PORTFOLIO_ASSET', { assetId: deleteTarget.id });
       }
       setAssets((prev) => prev.filter((a) => a.id !== deleteTarget.id));
       toast(`Aset "${deleteTarget.asset_name}" berhasil dihapus`);

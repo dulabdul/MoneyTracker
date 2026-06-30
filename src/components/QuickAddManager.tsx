@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { TxFormDialog } from "./LedgerManager";
 import { createBrowserScopedClient, isConfigured, adjustWalletBalance, getTransactionDelta } from "../lib/supabase";
+import { logClientAction, logClientError } from "../lib/logger";
 const supabase = createBrowserScopedClient();
 import type { Wallet, Category, TransactionType } from "../lib/supabase";
 import type { TxFormData } from "./LedgerManager";
@@ -124,7 +125,7 @@ export default function QuickAddManager({
         setError("Not authenticated");
         return;
       }
-      const { error: err } = await supabase
+      const { data: newTx, error: err } = await supabase
         .from("transactions")
         .insert({
           description: data.description,
@@ -134,11 +135,15 @@ export default function QuickAddManager({
           category_id: data.category_id,
           created_at: data.created_at || new Date().toISOString(),
           user_id: user.id,
-        });
+        })
+        .select()
+        .single();
       if (err) {
+        logClientError("QUICK_ADD", err);
         setError(err.message);
         throw err;
       }
+      logClientAction("QUICK_ADD", { transactionId: newTx.id, amount: data.amount, type: data.type });
       // Sync wallet balance immediately
       const delta = getTransactionDelta(data.amount, data.type);
       const updatedWallet = await adjustWalletBalance(supabase, data.wallet_id, delta);
@@ -322,6 +327,8 @@ function PayBillDialog({
       await onSave(fromWalletId, wallet.id, amount);
       onClose();
     } catch (err: any) {
+      logClientError('QUICK_ADD', err);
+      console.error(err);
       setError(err.message || "Gagal memproses pembayaran tagihan.");
     } finally {
       setSaving(false);

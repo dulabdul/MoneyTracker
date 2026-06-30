@@ -365,8 +365,7 @@ export async function adjustWalletBalance(
     .single();
 
   if (updateErr) {
-    console.error("adjustWalletBalance error:", updateErr);
-    return null;
+    throw updateErr;
   }
   return updated as Wallet;
 }
@@ -402,8 +401,7 @@ export async function updateWallet(
     .single();
     
   if (error) {
-    console.error("updateWallet error:", error);
-    return null;
+    throw error;
   }
   return updated as Wallet;
 }
@@ -424,8 +422,7 @@ export async function deleteWallet(supabaseClient: any, walletId: string): Promi
     .eq("user_id", user.id);
     
   if (error) {
-    console.error("deleteWallet error:", error);
-    return false;
+    throw error;
   }
   return true;
 }

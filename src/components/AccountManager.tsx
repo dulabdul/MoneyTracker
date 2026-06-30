@@ -27,6 +27,7 @@ import {
   deleteWallet,
   isCreditAccount,
 } from "@/lib/supabase";
+import { logClientAction, logClientError } from "@/lib/logger";
 const supabase = createBrowserScopedClient();
 import type { Wallet } from "@/lib/supabase";
 import { getAccountLogo } from "@/lib/logoUtils";
@@ -170,8 +171,10 @@ function EditAccountDialog({
           due_month_offset: dueMonthOffset,
         } : {}),
       });
+      logClientAction('EDIT_ACCOUNT', { walletId: account!.id, name });
       onClose();
     } catch (err: any) {
+      logClientError('EDIT_ACCOUNT', err);
       setError(err.message || "Gagal menyimpan perubahan");
     } finally {
       setSaving(false);
@@ -408,9 +411,15 @@ export default function AccountManager({ initialAccounts }: AccountManagerProps)
       }
     ) => {
       if (isConfigured && supabase) {
-        const updated = await updateWallet(supabase, id, data);
-        if (!updated) throw new Error("Gagal memperbarui akun di database");
-        setAccounts((prev) => prev.map((w) => (w.id === id ? updated : w)));
+        try {
+          const updated = await updateWallet(supabase, id, data);
+          if (!updated) throw new Error("Gagal memperbarui akun: Data tidak ditemukan");
+          setAccounts((prev) => prev.map((w) => (w.id === id ? updated : w)));
+          logClientAction('UPDATE_ACCOUNT', { walletId: id, data });
+        } catch (err: any) {
+          logClientError('UPDATE_ACCOUNT', err);
+          throw err;
+        }
       } else {
         setAccounts((prev) =>
           prev.map((w) => (w.id === id ? { ...w, ...data } : w))
@@ -431,7 +440,8 @@ export default function AccountManager({ initialAccounts }: AccountManagerProps)
     try {
       if (isConfigured && supabase) {
         const ok = await deleteWallet(supabase, deleteTarget.id);
-        if (!ok) throw new Error("Gagal menghapus akun");
+        if (!ok) throw new Error("Gagal menghapus akun di database");
+        logClientAction('DELETE_ACCOUNT', { walletId: deleteTarget.id, name: deleteTarget.name });
       }
       const name = deleteTarget.name;
       setAccounts((prev) => prev.filter((w) => w.id !== deleteTarget.id));
@@ -442,6 +452,7 @@ export default function AccountManager({ initialAccounts }: AccountManagerProps)
         })
       );
     } catch (err: any) {
+      logClientError('DELETE_ACCOUNT', err);
       window.dispatchEvent(
         new CustomEvent("show-toast", {
           detail: { message: err.message || "Gagal menghapus akun", type: "error" },

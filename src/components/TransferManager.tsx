@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createBrowserScopedClient, isConfigured } from "@/lib/supabase";
+import { logClientAction, logClientError } from "@/lib/logger";
 const supabase = createBrowserScopedClient();
 import DatePicker from "@/components/ui/DatePicker";
 
@@ -256,6 +257,7 @@ function NewTransferDialog({
       });
       onClose();
     } catch (err: any) {
+      logClientError('SAVE_TRANSFER', err);
       setError(err.message || "Gagal melakukan transfer.");
     } finally {
       setSaving(false);
@@ -675,12 +677,14 @@ export default function TransferManager({
         });
 
         if (error) {
+          logClientError('SAVE_TRANSFER', error);
           triggerToast(`Gagal memproses transfer: ${error.message}`, "error");
           setDbError(error.message);
           throw error;
         }
 
         if (data && data.success) {
+          logClientAction('SAVE_TRANSFER', { amount: formData.amount });
           triggerToast(`Berhasil mentransfer ${formatIDR(formData.amount)} dari ${senderName} ke ${receiverName}`);
           window.dispatchEvent(new CustomEvent("refresh-data"));
         }
@@ -739,6 +743,7 @@ export default function TransferManager({
         }
 
         setTransfers((prev) => [newTransfer, ...prev]);
+        logClientAction('SAVE_TRANSFER', { amount: formData.amount });
         triggerToast(`[Demo] Berhasil mentransfer ${formatIDR(formData.amount)} dari ${senderName} ke ${receiverName}`);
       }
     },
@@ -755,8 +760,12 @@ export default function TransferManager({
           .delete()
           .eq("id", deleteTarget.id);
 
-        if (error) throw error;
+        if (error) {
+          logClientError('DELETE_TRANSFER', error);
+          throw error;
+        }
 
+        logClientAction('DELETE_TRANSFER', { transferId: deleteTarget.id });
         triggerToast("Transfer berhasil dibatalkan dan saldo dikembalikan.");
         window.dispatchEvent(new CustomEvent("refresh-data"));
       } else {
