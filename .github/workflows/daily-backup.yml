@@ -12,13 +12,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: database-backups # Check out the backups branch directly (requires branch to exist)
           fetch-depth: 0 # Fetch all history for all tags and branches
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           
       - name: Install dependencies
         run: npm install
@@ -31,8 +30,29 @@ jobs:
         
       - name: Commit and Push Changes
         run: |
+          # 1. Save backup files to a temp directory outside the repository
+          mkdir -p ../backup-temp
+          cp -r backups/* ../backup-temp/ || true
+          
+          # 2. Configure Git
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 3. Check out the backup branch. If it doesn't exist on remote, create it.
+          git fetch origin
+          if git show-ref --quiet refs/remotes/origin/database-backups; then
+            git checkout database-backups
+            git pull origin database-backups
+          else
+            git checkout -b database-backups
+            echo "Created and checked out new database-backups branch"
+          fi
+          
+          # 4. Restore the backup files
+          mkdir -p backups
+          cp -r ../backup-temp/* backups/ || true
+          
+          # 5. Commit and push
           git add backups/
           git commit -m "chore(backup): automated daily database backup [skip ci]" || echo "No changes to commit"
           git push origin database-backups
