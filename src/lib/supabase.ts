@@ -341,9 +341,10 @@ export async function adjustWalletBalance(
   walletId: string,
   delta: number
 ): Promise<Wallet | null> {
-  if (!isConfigured || !supabaseClient) return null;
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session?.user) return null;
+  if (!isConfigured || !supabaseClient) throw new Error("Supabase is not configured or client is missing");
+  const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!session?.user) throw new Error("User session not found (Offline or Logged out)");
   const user = session.user;
   
   // Use RPC for atomic read-modify-write to prevent race conditions
@@ -387,9 +388,10 @@ export async function updateWallet(
     due_month_offset?: number;
   }
 ): Promise<Wallet | null> {
-  if (!isConfigured || !supabaseClient) return null;
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session?.user) return null;
+  if (!isConfigured || !supabaseClient) throw new Error("Supabase is not configured or client is missing");
+  const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!session?.user) throw new Error("User session not found (Offline or Logged out)");
   const user = session.user;
 
   const { data: updated, error } = await supabaseClient
@@ -410,9 +412,10 @@ export async function updateWallet(
  * Delete a wallet from Supabase.
  */
 export async function deleteWallet(supabaseClient: any, walletId: string): Promise<boolean> {
-  if (!isConfigured || !supabaseClient) return false;
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session?.user) return false;
+  if (!isConfigured || !supabaseClient) throw new Error("Supabase is not configured or client is missing");
+  const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!session?.user) throw new Error("User session not found (Offline or Logged out)");
   const user = session.user;
 
   const { error } = await supabaseClient
