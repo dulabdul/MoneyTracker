@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCurrentWIBDate } from "../lib/utils";
 import { getTransactionLogo } from "../lib/logoUtils";
 import { fetchDashboardData, fetchFinancialHealth } from "../lib/supabase";
 import { isConfigured } from "../lib/supabase";
@@ -21,8 +22,9 @@ import FinancialHealthWidget from "../components/FinancialHealthWidget";
 // ── Parse query params ────────────────────────────────────────────────────────
 const url = Astro.url;
 const period = (url.searchParams.get("period") as "month" | "year" | "date") || "month";
-const year = parseInt(url.searchParams.get("year") || "2026", 10);
-const month = parseInt(url.searchParams.get("month") || "6", 10);
+const currentWIB = getCurrentWIBDate();
+const year = parseInt(url.searchParams.get("year") || String(currentWIB.year), 10);
+const month = parseInt(url.searchParams.get("month") || String(currentWIB.month), 10);
 const date = url.searchParams.get("date") || undefined;
 const type = (url.searchParams.get("type") as "all" | "income" | "spend") || "all";
 

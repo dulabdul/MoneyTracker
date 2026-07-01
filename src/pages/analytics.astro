@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCurrentWIBDate } from "../lib/utils";
 import AnalyticsDashboard from "../components/AnalyticsDashboard";
 import { fetchAllAnalytics } from "../lib/analytics";
 import type { AnalyticsData } from "../lib/analytics";
@@ -8,8 +9,9 @@ const { supabase } = Astro.locals;
 
 // ── Parse query params ────────────────────────────────────────────────────────
 const url = Astro.url;
-const year = parseInt(url.searchParams.get("year") || "2026", 10);
-const month = parseInt(url.searchParams.get("month") || "6", 10);
+const currentWIB = getCurrentWIBDate();
+const year = parseInt(url.searchParams.get("year") || String(currentWIB.year), 10);
+const month = parseInt(url.searchParams.get("month") || String(currentWIB.month), 10);
 const period = (url.searchParams.get("period") || "month") as "month" | "year" | "date";
 
 const { user } = Astro.locals;

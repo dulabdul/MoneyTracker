@@ -41,6 +41,7 @@ import type { TransactionRow, Wallet, Category, TransactionType } from "@/lib/su
 import FilterControls from "./FilterControls";
 import DatePicker from "@/components/ui/DatePicker";
 import { logClientAction, logClientError } from "../lib/logger";
+import { getCurrentWIBDate } from "../lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
@@ -978,8 +979,10 @@ export default function LedgerManager({
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "spend">("all");
   const [filterPeriod, setFilterPeriod] = useState<"month" | "year" | "date">("month");
-  const [filterYear, setFilterYear] = useState<number>(2026);
-  const [filterMonth, setFilterMonth] = useState<number>(6); // Juni
+  
+  const currentWIB = getCurrentWIBDate();
+  const [filterYear, setFilterYear] = useState<number>(currentWIB.year);
+  const [filterMonth, setFilterMonth] = useState<number>(currentWIB.month); // WIB month
   const [filterDate, setFilterDate] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
 

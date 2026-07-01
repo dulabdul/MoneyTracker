@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCurrentWIBDate } from "../lib/utils";
 import BudgetManager from "../components/BudgetManager";
 import { isConfigured } from "../lib/supabase";
 import type { BudgetRow, Category } from "../components/BudgetManager";
@@ -9,9 +10,10 @@ if (!user) {
   return Astro.redirect('/login');
 }
 
-// Extract month/year filters from URL, default to June 2026 to align with seed transactions
-const activeMonth = Number(Astro.url.searchParams.get("month") || 6);
-const activeYear = Number(Astro.url.searchParams.get("year") || 2026);
+// Extract month/year filters from URL, default to current WIB month/year
+const currentWIB = getCurrentWIBDate();
+const activeMonth = Number(Astro.url.searchParams.get("month") || currentWIB.month);
+const activeYear = Number(Astro.url.searchParams.get("year") || currentWIB.year);
 
 let categories: Category[] = [];
 let budgetsRaw: any[] = [];
