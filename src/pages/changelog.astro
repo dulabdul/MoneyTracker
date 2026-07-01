@@ -14,6 +14,20 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.9",
+    date: "2 Juli 2026",
+    added: [
+      "Created a client-side telemetry logger bridge (/api/log) that relays PWA and web UI client actions and errors directly to Vercel's Serverless logs."
+    ],
+    improved: [
+      "Configured all page filters (Dashboard, Analytics, Budgets, LedgerManager) to dynamically default to the current month and year in Waktu Indonesia Barat (WIB, UTC+7) instead of static hardcoded values."
+    ],
+    fixed: [
+      "Resolved PWA 'Not Authenticated' bugs by disabling httpOnly on session cookies in middleware.ts, allowing client-side createBrowserClient to successfully read and synchronize browser sessions.",
+      "Replaced silent null returns in DB wallet operations with explicit session validation errors to prevent UI states from falsely displaying 'Data tidak ditemukan' upon authorization expiry."
+    ]
+  },
+  {
     version: "v1.2.8",
     date: "1 Juli 2026",
     improved: [
