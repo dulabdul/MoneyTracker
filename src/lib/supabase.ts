@@ -205,32 +205,42 @@ export async function fetchDashboardData(supabaseClient: any, userId: string, pa
     const yearEndStr = new Date(year, 11, 31, 23, 59, 59, 999).toISOString();
 
     // ── Week boundaries (Mon–Sun) based on filters ──────────────────────────
+    // Important: Use WIB timezone offset to calculate the correct day of the week
     let targetDate = new Date();
+    // Shift targetDate to WIB (+7)
+    targetDate = new Date(targetDate.getTime() + 7 * 60 * 60 * 1000);
+
     if (period === "month") {
       const today = new Date();
-      if (year === today.getFullYear() && month === today.getMonth() + 1) {
-        targetDate = today;
+      const todayWIB = new Date(today.getTime() + 7 * 60 * 60 * 1000);
+      if (year === todayWIB.getUTCFullYear() && month === todayWIB.getUTCMonth() + 1) {
+        targetDate = todayWIB;
       } else {
-        targetDate = new Date(year, month - 1, 15);
+        targetDate = new Date(Date.UTC(year, month - 1, 15));
       }
     } else if (period === "date" && params.startDate) {
       targetDate = new Date(params.startDate);
+      // Ensure targetDate is treated as WIB for boundary calculations
+      targetDate = new Date(targetDate.getTime() + 7 * 60 * 60 * 1000);
     } else if (period === "year") {
-      targetDate = new Date(year, 5, 15); // middle of the year
+      targetDate = new Date(Date.UTC(year, 5, 15));
     }
 
-    const dayOfWeek  = targetDate.getDay() === 0 ? 7 : targetDate.getDay(); // 1=Mon … 7=Sun
+    const dayOfWeek  = targetDate.getUTCDay() === 0 ? 7 : targetDate.getUTCDay(); // 1=Mon … 7=Sun
     const weekStart  = new Date(targetDate);
-    weekStart.setDate(targetDate.getDate() - dayOfWeek + 1);
-    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setUTCDate(targetDate.getUTCDate() - dayOfWeek + 1);
+    weekStart.setUTCHours(0, 0, 0, 0);
+    // Shift back to UTC for DB querying (so midnight WIB becomes 17:00 UTC previous day)
+    weekStart.setTime(weekStart.getTime() - 7 * 60 * 60 * 1000);
+
     const weekEnd    = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
+    weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
+    weekEnd.setUTCHours(23, 59, 59, 999);
 
     const prevWeekStart = new Date(weekStart);
-    prevWeekStart.setDate(weekStart.getDate() - 7);
+    prevWeekStart.setUTCDate(weekStart.getUTCDate() - 7);
     const prevWeekEnd = new Date(weekEnd);
-    prevWeekEnd.setDate(weekEnd.getDate() - 7);
+    prevWeekEnd.setUTCDate(weekEnd.getUTCDate() - 7);
 
     // Call the single consolidated dashboard stats RPC function
     const { data, error } = await supabaseClient.rpc("get_dashboard_stats", {

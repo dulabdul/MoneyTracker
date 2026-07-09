@@ -163,12 +163,8 @@ BEGIN
         TO_CHAR(d.day, 'FMDD') AS month_label,
         COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0) AS inflow,
         COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) AS outflow
-      FROM generate_series(
-        v_start_time::date,
-        v_end_time::date,
-        '1 day'::interval
-      ) d(day)
-      LEFT JOIN public.transactions t ON t.created_at::date = d.day AND t.user_id = p_user_id
+      FROM generate_series(v_start_time, v_end_time, '1 day'::interval) d(day)
+      LEFT JOIN public.transactions t ON (t.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date = d.day::date AND t.user_id = p_user_id
       GROUP BY d.day
       ORDER BY d.day
     ) sub;
@@ -271,7 +267,7 @@ BEGIN
 
     -- Payday Effect Tracker (around 25th or 1st)
     WITH payday_dates AS (
-      SELECT DISTINCT created_at::date AS p_date
+      SELECT DISTINCT (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date AS p_date
       FROM public.transactions
       WHERE type = 'INCOME' AND user_id = p_user_id
         AND created_at >= v_target_start AND created_at <= v_target_end
@@ -279,12 +275,12 @@ BEGIN
     ),
     expense_days AS (
       SELECT
-        created_at::date AS e_date,
+        (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date AS e_date,
         SUM(amount) AS daily_amount
       FROM public.transactions
       WHERE type = 'EXPENSE' AND user_id = p_user_id
         AND created_at >= v_target_start AND created_at <= v_target_end
-      GROUP BY created_at::date
+      GROUP BY (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date
     ),
     classified_expenses AS (
       SELECT
@@ -759,7 +755,7 @@ BEGIN
     ) d(day)
     LEFT JOIN public.transactions t ON
       t.type = 'EXPENSE' AND t.user_id = p_user_id AND
-      t.created_at::date = d.day
+      (t.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date = d.day::date
     GROUP BY d.day
     ORDER BY d.day
   ) sub;
@@ -778,7 +774,7 @@ BEGIN
     ) d(day)
     LEFT JOIN public.transactions t ON
       t.type = 'EXPENSE' AND t.user_id = p_user_id AND
-      t.created_at::date = d.day
+      (t.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date = d.day::date
     GROUP BY d.day
     ORDER BY d.day
   ) sub;
@@ -885,12 +881,12 @@ BEGIN
     HAVING (SUM(t.amount) / 90) > 0
   ),
   target_month_days AS (
-    SELECT c.name AS category, t.created_at::date AS spike_date, SUM(t.amount) AS daily_total
+    SELECT c.name AS category, (t.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date AS spike_date, SUM(t.amount) AS daily_total
     FROM public.transactions t
     JOIN public.categories c ON t.category_id = c.id
     WHERE t.type = 'EXPENSE' AND t.user_id = p_user_id
       AND t.created_at >= v_target_start AND t.created_at <= v_target_end
-    GROUP BY c.name, t.created_at::date
+    GROUP BY c.name, (t.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date
   ),
   spikes AS (
     SELECT
