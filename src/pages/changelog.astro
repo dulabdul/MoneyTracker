@@ -14,6 +14,14 @@ interface ChangelogEntry {
 
 const changelogs: ChangelogEntry[] = [
   {
+    version: "v1.2.10",
+    date: "9 Juli 2026",
+    fixed: [
+      "Resolved a critical timezone offset bug where weekly and monthly charts would incorrectly bucket transactions into UTC dates instead of WIB (Waktu Indonesia Barat) by enforcing an explicit (created_at AT TIME ZONE 'Asia/Jakarta')::date cast across all analytics RPC functions.",
+      "Fixed an issue in the client-side week boundary calculation where an injected timezone offset caused the Weekly Expenses chart to display an incorrect range (Sunday to Sunday) instead of the standard Monday to Sunday view."
+    ]
+  },
+  {
     version: "v1.2.9",
     date: "2 Juli 2026",
     added: [
