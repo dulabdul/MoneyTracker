@@ -230,8 +230,6 @@ export async function fetchDashboardData(supabaseClient: any, userId: string, pa
     const weekStart  = new Date(targetDate);
     weekStart.setUTCDate(targetDate.getUTCDate() - dayOfWeek + 1);
     weekStart.setUTCHours(0, 0, 0, 0);
-    // Shift back to UTC for DB querying (so midnight WIB becomes 17:00 UTC previous day)
-    weekStart.setTime(weekStart.getTime() - 7 * 60 * 60 * 1000);
 
     const weekEnd    = new Date(weekStart);
     weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
