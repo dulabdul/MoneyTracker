@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { createBrowserScopedClient } from "../../lib/supabase";
 import type { WeeklyExpense } from "../../lib/supabase";
+import { getCurrentWIBDate } from "../../lib/utils";
 
 interface WeeklyExpensesChartProps {
   title?: string;
@@ -60,9 +61,10 @@ export default function WeeklyExpensesChart({
         const { fetchDashboardData } = await import("../../lib/supabase");
         // Get filters from URL
         const urlParams = new URLSearchParams(window.location.search);
+        const currentWIB = getCurrentWIBDate();
         const period = (urlParams.get("period") as any) || "month";
-        const year = parseInt(urlParams.get("year") || "2026", 10);
-        const month = parseInt(urlParams.get("month") || "6", 10);
+        const year = parseInt(urlParams.get("year") || String(currentWIB.year), 10);
+        const month = parseInt(urlParams.get("month") || String(currentWIB.month), 10);
         const date = urlParams.get("date") || undefined;
 
         const { data: { user } } = await supabase.auth.getUser();

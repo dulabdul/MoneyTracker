@@ -29,10 +29,12 @@ interface AnalyticsDashboardProps {
   period?: "month" | "year" | "date";
 }
 
+import { getCurrentWIBDate } from "../lib/utils";
+
 export default function AnalyticsDashboard({
   data,
-  year = 2026,
-  month = 6,
+  year = getCurrentWIBDate().year,
+  month = getCurrentWIBDate().month,
   period = "month",
 }: AnalyticsDashboardProps) {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>(data);
