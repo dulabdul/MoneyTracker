@@ -10,7 +10,9 @@ const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("❌ Missing PUBLIC_SUPABASE_URL or PUBLIC_SUPABASE_ANON_KEY in .env");
+  console.error("❌ Missing PUBLIC_SUPABASE_URL or PUBLIC_SUPABASE_ANON_KEY.");
+  console.error("If running locally, ensure these are set in your .env file.");
+  console.error("If running in GitHub Actions, ensure these are configured in Settings > Secrets and variables > Actions > Repository secrets.");
   process.exit(1);
 }
 
